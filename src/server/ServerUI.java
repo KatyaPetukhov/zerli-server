@@ -6,6 +6,9 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 import server.gui.ServerController;
+import server.model.DBManager;
+import server.model.EchoServer;
+import server.model.ServerManager;
 
 public class ServerUI extends Application {
 	/* Deletes all existing data from default database and adds default values. */

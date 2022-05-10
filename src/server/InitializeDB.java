@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 
 import common.Role;
+import server.model.DBManager;
 import server.sql_queries.UsersSQL;
 
 public class InitializeDB {

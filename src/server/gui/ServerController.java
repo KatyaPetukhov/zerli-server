@@ -6,9 +6,9 @@ import javafx.scene.control.Button;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.scene.text.Text;
-import server.DBManager;
-import server.EchoServer;
-import server.ServerManager;
+import server.model.DBManager;
+import server.model.EchoServer;
+import server.model.ServerManager;
 
 public class ServerController {
 	@FXML

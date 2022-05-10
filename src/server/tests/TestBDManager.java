@@ -6,7 +6,7 @@ import java.util.List;
 
 import common.Role;
 import common.request_data.User;
-import server.DBManager;
+import server.model.DBManager;
 import server.sql_queries.UsersSQL;
 
 public class TestBDManager {
