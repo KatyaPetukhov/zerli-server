@@ -59,6 +59,7 @@ public class DBManager {
 		return DEFAULT_PASSWORD;
 	}
 
+	@SuppressWarnings("deprecation")
 	public Connection getConnection()
 			throws SQLException, InstantiationException, IllegalAccessException, ClassNotFoundException {
 		/*
