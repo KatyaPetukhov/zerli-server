@@ -36,8 +36,8 @@ public class EchoServer extends AbstractServer {
 		if (manager == null) {
 			/* Should not happen. */
 			System.out.println("Warning! DBManager is null, but server runs.");
-			request.requestType = RequestType.UNKNOWN_REQUEST;
-			request.data = (new ServerError("Database is offline")).toJson();
+			request.requestType = RequestType.REQUEST_FAILED;
+			request.data = new ServerError("Database is offline").toJson();
 			respond(client, request);
 			return;
 		}
@@ -48,7 +48,7 @@ public class EchoServer extends AbstractServer {
 			 * Usually should not happen, but can be a result of incorrect client.
 			 */
 			request.requestType = RequestType.FORBIDDEN;
-			request.data = (new ServerError("User or password is invalid")).toJson();
+			request.data = new ServerError("User or password is invalid").toJson();
 			respond(client, request);
 			return;
 		}
@@ -58,18 +58,26 @@ public class EchoServer extends AbstractServer {
 			 * Usually should not happen, but can be a result of incorrect client.
 			 */
 			request.requestType = RequestType.FORBIDDEN;
-			request.data = (new ServerError("User is not yet approved.")).toJson();
+			request.data = new ServerError("User is not yet approved.").toJson();
 			respond(client, request);
 			return;
 		}
+		System.out.println("Request: " + request.requestType.name() + ", Role: " + user.userrole.name() + ", User: " + user.nickname);
 		switch (request.requestType) {
+		case PING:
+			/*
+			 * Ping does not change the request at all. Keeps all the data as is. Required
+			 * to prove that server behaves correctly. Requires being a GUEST or correct
+			 * user. Incorrect user will fail before this switch.
+			 */
+			break;
 		case GET_USER:
 			request = handleGetUser(request);
 			break;
 		/* TODO: Add other cases of requestType */
 		default:
-			request.requestType = RequestType.UNKNOWN_REQUEST;
-			request.data = (new ServerError("Unsupporter reuqest.")).toJson();
+			request.requestType = RequestType.REQUEST_FAILED;
+			request.data = new ServerError("Unsupporter reuqest.").toJson();
 			break;
 		}
 		respond(client, request);
@@ -94,7 +102,7 @@ public class EchoServer extends AbstractServer {
 		if (new_user == null) {
 			/* New user is null only when password does not match. */
 			request.requestType = RequestType.FORBIDDEN;
-			request.data = (new ServerError("User is not valid.")).toJson();
+			request.data = new ServerError("User is not valid.").toJson();
 			;
 		} else {
 			request.data = new_user.toJson();

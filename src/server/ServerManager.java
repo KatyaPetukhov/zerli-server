@@ -11,6 +11,8 @@ public class ServerManager {
 	private EchoServer server;
 	private DBManager manager;
 
+	private Integer port = null;
+
 	public void close() {
 		/* Run to close all connections. */
 		System.out.println("Closing all server connections.");
@@ -19,17 +21,13 @@ public class ServerManager {
 
 	public void setServer(int port) {
 		stopServer();
-		server = new EchoServer(port);
-		server.setDBManager(manager);
+		this.port = port;
 		startServer();
 	}
 
 	public void setDBManager(String serverURL, String username, String password) {
 		stopServer();
 		manager = new DBManager(serverURL, username, password);
-		if (server != null) {
-			server.setDBManager(manager);
-		}
 		startServer();
 	}
 
@@ -42,9 +40,11 @@ public class ServerManager {
 	}
 
 	private void startServer() {
-		if (server == null || manager == null) {
+		if (port == null || manager == null) {
 			return;
 		}
+		server = new EchoServer(port);
+		server.setDBManager(manager);
 		try {
 			server.listen();
 		} catch (IOException e) {
@@ -61,5 +61,6 @@ public class ServerManager {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+		server = null;
 	}
 }

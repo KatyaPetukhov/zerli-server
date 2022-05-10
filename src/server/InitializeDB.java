@@ -1,12 +1,13 @@
 package server;
 
+import java.sql.Connection;
 import java.sql.SQLException;
 
 import common.Role;
 import server.sql_queries.UsersSQL;
 
 public class InitializeDB {
-	/* Adds data that does not have any interface to add it yet. */
+	/* Add a default set of data that is enough to play with the application. */
 	public void f(DBManager model) {
 		addUsers(model);
 //		addProducts(model);
@@ -14,12 +15,13 @@ public class InitializeDB {
 
 	private void addUsers(DBManager model) {
 		try {
-			UsersSQL.resetUsers(model.getConnection());
-			UsersSQL.addNewUser(model.getConnection(), "u", "u", "Katya", Role.CUSTOMER, true);
-			UsersSQL.addNewUser(model.getConnection(), "o", "o", "Jessika", Role.OWNER, true);
-			UsersSQL.addNewUser(model.getConnection(), "m", "m", "Niv", Role.MANAGER, true);
-			UsersSQL.addNewUser(model.getConnection(), "w", "w", "Who", Role.WORKER, true);
-			UsersSQL.addNewUser(model.getConnection(), "s", "s", "Aaron", Role.SUPPORT, true);
+			Connection connection = model.getConnection();
+			UsersSQL.resetUsers(connection);
+			UsersSQL.addNewUser(connection, "u", "u", "Katya", Role.CUSTOMER, true);
+			UsersSQL.addNewUser(connection, "o", "o", "Jessika", Role.OWNER, true);
+			UsersSQL.addNewUser(connection, "m", "m", "Niv", Role.MANAGER, true);
+			UsersSQL.addNewUser(connection, "w", "w", "Who", Role.WORKER, true);
+			UsersSQL.addNewUser(connection, "s", "s", "Aaron", Role.SUPPORT, true);
 		} catch (InstantiationException | IllegalAccessException | ClassNotFoundException | SQLException e) {
 			e.printStackTrace();
 		}

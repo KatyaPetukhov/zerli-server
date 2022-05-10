@@ -38,7 +38,7 @@ public class ServerController {
 	private static String SQL_DISCONNECTED = "SQL Offline";
 	private ServerManager model;
 	private boolean connected;
-	
+
 	public void setServerModel(ServerManager model) {
 		this.model = model;
 		this.connected = false;
@@ -60,7 +60,7 @@ public class ServerController {
 			sqlMessage.setText(SQL_DISCONNECTED);
 			return;
 		}
-		int port = 0;
+		int port;
 		try {
 			port = Integer.parseInt(portText.getText().trim());
 		} catch (NumberFormatException e) {
@@ -70,7 +70,8 @@ public class ServerController {
 		String url = urlText.getText().trim();
 		String username = usernameText.getText().trim();
 		String password = passwordText.getText().trim();
-
+		/* TODO: Check that arguments above make sense. */
+		
 		this.model.setServer(port);
 		this.model.setDBManager(url, username, password);
 

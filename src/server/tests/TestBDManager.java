@@ -1,5 +1,6 @@
 package server.tests;
 
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
 
@@ -18,20 +19,21 @@ public class TestBDManager {
 		User user = null;
 		User userEmpty = null;
 		try {
-			UsersSQL.resetUsers(model.getConnection());
-			UsersSQL.addNewUser(model.getConnection(), "u", "u", "Katya", Role.CUSTOMER, true);
-			UsersSQL.addNewUser(model.getConnection(), "o", "o", "Jessika", Role.OWNER, true);
-			UsersSQL.addNewUser(model.getConnection(), "m", "m", "Niv", Role.MANAGER, true);
-			UsersSQL.addNewUser(model.getConnection(), "w", "w", "Who", Role.WORKER, true);
-			UsersSQL.addNewUser(model.getConnection(), "s", "s", "Aaron", Role.SUPPORT, false);
-			approved = UsersSQL.getUsers(model.getConnection(), true);
-			notApproved = UsersSQL.getUsers(model.getConnection(), false);
-			UsersSQL.approveUser(model.getConnection(), "s");
-			notApprovedEmpty = UsersSQL.getUsers(model.getConnection(), false);
-			UsersSQL.removeUser(model.getConnection(), "s");
-			userEmpty = UsersSQL.getUser(model.getConnection(), "s");
-			UsersSQL.addNewUser(model.getConnection(), "s", "s", "Aaron", Role.SUPPORT, true);
-			user = UsersSQL.getUser(model.getConnection(), "s");
+			Connection connection = model.getConnection();
+			UsersSQL.resetUsers(connection);
+			UsersSQL.addNewUser(connection, "u", "u", "Katya", Role.CUSTOMER, true);
+			UsersSQL.addNewUser(connection, "o", "o", "Jessika", Role.OWNER, true);
+			UsersSQL.addNewUser(connection, "m", "m", "Niv", Role.MANAGER, true);
+			UsersSQL.addNewUser(connection, "w", "w", "Who", Role.WORKER, true);
+			UsersSQL.addNewUser(connection, "s", "s", "Aaron", Role.SUPPORT, false);
+			approved = UsersSQL.getUsers(connection, true, 0, 10);
+			notApproved = UsersSQL.getUsers(connection, false, 0, 10);
+			UsersSQL.approveUser(connection, "s");
+			notApprovedEmpty = UsersSQL.getUsers(connection, false, 0, 10);
+			UsersSQL.removeUser(connection, "s");
+			userEmpty = UsersSQL.getUser(connection, "s");
+			UsersSQL.addNewUser(connection, "s", "s", "Aaron", Role.SUPPORT, true);
+			user = UsersSQL.getUser(connection, "s");
 		} catch (InstantiationException | IllegalAccessException | ClassNotFoundException | SQLException e) {
 			e.printStackTrace();
 			status = false;
@@ -79,7 +81,7 @@ public class TestBDManager {
 	public static void main(String[] args) {
 		boolean status = true;
 		status &= testUsers();
-		
+
 		if (status) {
 			System.out.println("\nPASSED");
 		} else {

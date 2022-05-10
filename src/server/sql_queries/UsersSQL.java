@@ -9,26 +9,30 @@ import java.util.List;
 import common.Role;
 import common.request_data.User;
 
-public class UsersSQL {
+public class UsersSQL extends BaseSQL {
 	/*
 	 * SQL queries for Users manipulation.
 	 */
 
 	/* SQL SCHEMA: */
-	private static String TABLE_NAME = "users";
+	protected static String TABLE_NAME = "users";
 	private static String USERNAME = "username"; // key
 	private static String PASSWORD = "password";
 	private static String NICKNAME = "nickname";
-	private static String USERROLE = "userrole";
-	private static String APPROVED = "approved";
+	private static String USERROLE = "userrole"; // varchar
+	private static String APPROVED = "approved"; // boolean
 
 	private static String VARCHAR = " varchar(255)";
 	private static String BOOLEAN = " boolean";
 	/* End SQL SCHEMA */
 
 	public static boolean test(Connection connection) {
+		/*
+		 * Tests connection to a table, just to validate that table is available. Can be
+		 * any other query.
+		 */
 		try {
-			connection.prepareStatement("select * from " + TABLE_NAME + ";").executeQuery();
+			connection.prepareStatement("SELECT * FROM " + TABLE_NAME + " LIMIT 1;").executeQuery();
 		} catch (SQLException e) {
 			e.printStackTrace();
 			return false;
@@ -88,6 +92,7 @@ public class UsersSQL {
 		String query = "SELECT * FROM " + TABLE_NAME + " WHERE " + USERNAME + "='" + username + "';";
 		try {
 			ResultSet rs = runQuery(connection, query);
+			/* username is a key, so there can be 0 or 1 objects only. */
 			while (rs.next()) {
 				User user = new User();
 				user.username = rs.getString(USERNAME);
@@ -103,8 +108,13 @@ public class UsersSQL {
 		return null;
 	}
 
-	public static List<User> getUsers(Connection connection, boolean approved) {
-		String query = "SELECT * FROM " + TABLE_NAME + " WHERE " + APPROVED + "=" + (approved ? 1 : 0) + ";";
+	public static List<User> getUsers(Connection connection, boolean approved, int start, int amount) {
+		/*
+		 * Brings "amount" of users starting from user number "start", where approved
+		 * true or false according to input.
+		 */
+		String query = "SELECT * FROM " + TABLE_NAME + " WHERE " + APPROVED + "=" + (approved ? 1 : 0) + " LIMIT "
+				+ start + "," + amount + ";";
 		List<User> users = new ArrayList<User>();
 
 		try {
@@ -122,15 +132,5 @@ public class UsersSQL {
 			e.printStackTrace();
 		}
 		return users;
-	}
-
-	private static ResultSet runQuery(Connection connection, String query) throws SQLException {
-		System.out.println(query);
-		return connection.prepareStatement(query).executeQuery();
-	}
-
-	private static int runUpdate(Connection connection, String query) throws SQLException {
-		System.out.println(query);
-		return connection.prepareStatement(query).executeUpdate();
 	}
 }
