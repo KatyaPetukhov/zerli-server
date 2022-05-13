@@ -4,6 +4,8 @@ import java.io.IOException;
 
 import common.Request;
 import common.RequestType;
+import common.interfaces.UserManager.PermissionDenied;
+import common.interfaces.UserManager.WeakPassword;
 import common.request_data.ServerError;
 import common.request_data.User;
 import ocsf.server.AbstractServer;
@@ -41,8 +43,8 @@ public class EchoServer extends AbstractServer {
 			respond(client, request);
 			return;
 		}
-		User user = manager.validateUser(request.authorizationInformation);
-		if (user == null) {
+		request.user = manager.validateUser(request.user);
+		if (request.user == null) {
 			/*
 			 * If user is null after the validation, meaning some user data is invalid.
 			 * Usually should not happen, but can be a result of incorrect client.
@@ -52,7 +54,7 @@ public class EchoServer extends AbstractServer {
 			respond(client, request);
 			return;
 		}
-		if (!user.approved) {
+		if (!request.user.approved) {
 			/*
 			 * If user is null after the validation, meaning some user data is invalid.
 			 * Usually should not happen, but can be a result of incorrect client.
@@ -62,7 +64,8 @@ public class EchoServer extends AbstractServer {
 			respond(client, request);
 			return;
 		}
-		System.out.println("Request: " + request.requestType.name() + ", Role: " + user.userrole.name() + ", User: " + user.nickname);
+		System.out.println("Request: " + request.requestType.name() + ", Role: " + request.user.userrole.name()
+				+ ", User: " + request.user.nickname);
 		switch (request.requestType) {
 		case PING:
 			/*
@@ -74,12 +77,22 @@ public class EchoServer extends AbstractServer {
 		case GET_USER:
 			request = handleGetUser(request);
 			break;
-		/* TODO: Add other cases of requestType */
+		case ADD_USER:
+			request = handleAddUser(request);
+			break;
+		case APPROVE_USER:
+			request = handleApproveUser(request);
+			break;
+		/* TODO: Add other cases of requestType and implement handler functions. */
+		case GET_ITEMS:
+			request = handleGetItems(request);
+			break;
 		default:
 			request.requestType = RequestType.REQUEST_FAILED;
 			request.data = new ServerError("Unsupporter reuqest.").toJson();
 			break;
 		}
+
 		respond(client, request);
 	}
 
@@ -91,22 +104,71 @@ public class EchoServer extends AbstractServer {
 		}
 	}
 
+	/* Handler for requestType: */
 	private Request handleGetUser(Request request) {
 		/*
 		 * requestType.GET_USER
-		 * 
-		 * Validate login information.
 		 */
-		User new_user = User.fromJson(request.data);
-		new_user = manager.validateUser(new_user);
-		if (new_user == null) {
-			/* New user is null only when password does not match. */
-			request.requestType = RequestType.FORBIDDEN;
-			request.data = new ServerError("User is not valid.").toJson();
-			;
+		System.out.println("Correct user requested.");
+		User toCheck = User.fromJson(request.data);
+		toCheck = manager.getUserManager(request.user).getUser(toCheck.username, toCheck.password);
+		if (toCheck == null) {
+			System.out.println("Incorrect request.");
+			request.data = null;
 		} else {
-			request.data = new_user.toJson();
+			request.data = toCheck.toJson();
 		}
+		return request;
+	}
+
+	private Request handleAddUser(Request request) {
+		/*
+		 * requestType.ADD_USER
+		 */
+		User toAdd = User.fromJson(request.data);
+		try {
+			if (!manager.getUserManager(request.user).addNewUser(toAdd.username, toAdd.password, toAdd.nickname,
+					toAdd.userrole, toAdd.approved)) {
+				/* User already exists. */
+				request.requestType = RequestType.REQUEST_FAILED;
+			}
+			request.data = null;
+		} catch (WeakPassword e) {
+			/* Bad password. */
+			request.requestType = RequestType.REQUEST_FAILED;
+			request.data = new ServerError(e.getMessage()).toJson();
+		} catch (PermissionDenied e) {
+			request.requestType = RequestType.FORBIDDEN;
+			request.data = new ServerError("Only manager can approve new users.").toJson();
+		}
+		return request;
+	}
+
+	private Request handleApproveUser(Request request) {
+		/*
+		 * requestType.APPROVE_USER
+		 */
+		User toApprove = User.fromJson(request.data);
+		try {
+			if (!manager.getUserManager(request.user).approveUser(toApprove.username)) {
+				/* User does not exists. */
+				request.requestType = RequestType.REQUEST_FAILED;
+			}
+			request.data = null;
+		} catch (PermissionDenied e) {
+			request.requestType = RequestType.FORBIDDEN;
+			request.data = new ServerError("Only manager can approve new users.").toJson();
+		}
+		return request;
+	}
+
+	private Request handleGetItems(Request request) {
+		/*
+		 * requestType.GET_ITEMS
+		 * 
+		 * TODO: not implemented.
+		 */
+
 		return request;
 	}
 }

@@ -5,13 +5,13 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 
 import common.Role;
+import common.interfaces.UserManager;
 import common.request_data.User;
-import server.sql_queries.UsersSQL;
 
 public class DBManager {
 	/*
-	 * Handles all SQL requests via sql_queries.
-	 * Provides high level API for EchoServer for data manipulation.
+	 * Handles all SQL requests via sql_queries. Provides high level API for
+	 * EchoServer for data manipulation.
 	 */
 
 	private static String DRIVER_CLASS = "com.mysql.cj.jdbc.Driver";
@@ -71,34 +71,26 @@ public class DBManager {
 		return DriverManager.getConnection(serverURL, username, password);
 	}
 
+	public UserManager getUserManager(User requestedBy) {
+		try {
+			return new ServerUserManager(requestedBy, getConnection());
+		} catch (InstantiationException | IllegalAccessException | ClassNotFoundException | SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
 	public User validateUser(User user) {
 		/*
 		 * Return null if user is incorrect or does not match the password or role.
 		 * Returning null will result in "forbidden" response.
 		 */
-		if (user == null || user.userrole == Role.GUEST) {
+		if (user == null || user.username == null || user.userrole == Role.GUEST) {
 			/* No user information at all is fine and defined as Guest access. */
 			return guestUser;
 		}
-		User new_user;
-		try {
-			new_user = UsersSQL.getUser(getConnection(), user.username);
-		} catch (InstantiationException | IllegalAccessException | ClassNotFoundException | SQLException e) {
-			e.printStackTrace();
-			return null;
-		}
-		if (new_user == null) {
-			/*
-			 * User pretended to be not Guest, but does not exist in system - access
-			 * forbidden.
-			 */
-			return null;
-		}
-		if (user.password != new_user.password) {
-			/* Password mismatch */
-			return null;
-		}
-		return new_user;
+		return getUserManager(null).getUser(user.username, user.password);
 	}
 
 	public boolean isConnected() {
@@ -107,7 +99,7 @@ public class DBManager {
 			return true;
 		}
 		try {
-			UsersSQL.test(getConnection());
+			ServerUserManager.test(getConnection());
 		} catch (InstantiationException | IllegalAccessException | ClassNotFoundException | SQLException e) {
 			e.printStackTrace();
 			return false;

@@ -5,9 +5,11 @@ import java.sql.SQLException;
 import java.util.List;
 
 import common.Role;
+import common.interfaces.UserManager.PermissionDenied;
+import common.interfaces.UserManager.WeakPassword;
 import common.request_data.User;
 import server.model.DBManager;
-import server.sql_queries.UsersSQL;
+import server.model.ServerUserManager;
 
 public class TestBDManager {
 	private static boolean testUsers() {
@@ -18,23 +20,27 @@ public class TestBDManager {
 		List<User> notApprovedEmpty = null;
 		User user = null;
 		User userEmpty = null;
+		User manager = new User();
+		manager.userrole = Role.MANAGER;
 		try {
 			Connection connection = model.getConnection();
-			UsersSQL.resetUsers(connection);
-			UsersSQL.addNewUser(connection, "u", "u", "Katya", Role.CUSTOMER, true);
-			UsersSQL.addNewUser(connection, "o", "o", "Jessika", Role.OWNER, true);
-			UsersSQL.addNewUser(connection, "m", "m", "Niv", Role.MANAGER, true);
-			UsersSQL.addNewUser(connection, "w", "w", "Who", Role.WORKER, true);
-			UsersSQL.addNewUser(connection, "s", "s", "Aaron", Role.SUPPORT, false);
-			approved = UsersSQL.getUsers(connection, true, 0, 10);
-			notApproved = UsersSQL.getUsers(connection, false, 0, 10);
-			UsersSQL.approveUser(connection, "s");
-			notApprovedEmpty = UsersSQL.getUsers(connection, false, 0, 10);
-			UsersSQL.removeUser(connection, "s");
-			userEmpty = UsersSQL.getUser(connection, "s");
-			UsersSQL.addNewUser(connection, "s", "s", "Aaron", Role.SUPPORT, true);
-			user = UsersSQL.getUser(connection, "s");
-		} catch (InstantiationException | IllegalAccessException | ClassNotFoundException | SQLException e) {
+			ServerUserManager.resetUsers(connection);
+			ServerUserManager userManager = new ServerUserManager(manager, connection);
+			userManager.addNewUser("u", "u", "Katya", Role.CUSTOMER, true);
+			userManager.addNewUser("o", "o", "Jessika", Role.OWNER, true);
+			userManager.addNewUser("m", "m", "Niv", Role.MANAGER, true);
+			userManager.addNewUser("w", "w", "Who", Role.WORKER, true);
+			userManager.addNewUser("s", "s", "Aaron", Role.SUPPORT, false);
+			approved = userManager.getUsers(true, 0, 10);
+			notApproved = userManager.getUsers(false, 0, 10);
+			userManager.approveUser("s");
+			notApprovedEmpty = userManager.getUsers(false, 0, 10);
+			userManager.removeUser("s");
+			userEmpty = userManager.getUser("s", "s");
+			userManager.addNewUser("s", "s", "Aaron", Role.SUPPORT, true);
+			user = userManager.getUser("s", "s");
+		} catch (InstantiationException | IllegalAccessException | ClassNotFoundException | SQLException | WeakPassword
+				| PermissionDenied e) {
 			e.printStackTrace();
 			status = false;
 		}

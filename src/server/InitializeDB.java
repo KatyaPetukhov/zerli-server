@@ -4,8 +4,11 @@ import java.sql.Connection;
 import java.sql.SQLException;
 
 import common.Role;
+import common.interfaces.UserManager.PermissionDenied;
+import common.interfaces.UserManager.WeakPassword;
+import common.request_data.User;
 import server.model.DBManager;
-import server.sql_queries.UsersSQL;
+import server.model.ServerUserManager;
 
 public class InitializeDB {
 	/* Add a default set of data that is enough to play with the application. */
@@ -15,15 +18,19 @@ public class InitializeDB {
 	}
 
 	private void addUsers(DBManager model) {
+		User manager = new User();
+		manager.userrole = Role.MANAGER;
 		try {
 			Connection connection = model.getConnection();
-			UsersSQL.resetUsers(connection);
-			UsersSQL.addNewUser(connection, "u", "u", "Katya", Role.CUSTOMER, true);
-			UsersSQL.addNewUser(connection, "o", "o", "Jessika", Role.OWNER, true);
-			UsersSQL.addNewUser(connection, "m", "m", "Niv", Role.MANAGER, true);
-			UsersSQL.addNewUser(connection, "w", "w", "Who", Role.WORKER, true);
-			UsersSQL.addNewUser(connection, "s", "s", "Aaron", Role.SUPPORT, true);
-		} catch (InstantiationException | IllegalAccessException | ClassNotFoundException | SQLException e) {
+			ServerUserManager.resetUsers(connection);
+			ServerUserManager userManager = new ServerUserManager(manager, connection);
+			userManager.addNewUser("u", "u", "Katya", Role.CUSTOMER, true);
+			userManager.addNewUser("o", "o", "Jessika", Role.OWNER, true);
+			userManager.addNewUser("m", "m", "Niv", Role.MANAGER, true);
+			userManager.addNewUser("w", "w", "Who", Role.WORKER, true);
+			userManager.addNewUser("s", "s", "Aaron", Role.SUPPORT, true);
+		} catch (InstantiationException | IllegalAccessException | ClassNotFoundException | SQLException | WeakPassword
+				| PermissionDenied e) {
 			e.printStackTrace();
 		}
 	}
