@@ -1,11 +1,14 @@
 package server.model;
 
 import java.io.IOException;
+import java.util.ArrayList;
 
 import common.Request;
 import common.RequestType;
 import common.interfaces.UserManager.PermissionDenied;
 import common.interfaces.UserManager.WeakPassword;
+import common.request_data.CategoriesList;
+import common.request_data.ProductList;
 import common.request_data.ServerError;
 import common.request_data.User;
 import ocsf.server.AbstractServer;
@@ -74,6 +77,7 @@ public class EchoServer extends AbstractServer {
 			 * user. Incorrect user will fail before this switch.
 			 */
 			break;
+		/* UserManager */
 		case GET_USER:
 			request = handleGetUser(request);
 			break;
@@ -83,10 +87,15 @@ public class EchoServer extends AbstractServer {
 		case APPROVE_USER:
 			request = handleApproveUser(request);
 			break;
-		/* TODO: Add other cases of requestType and implement handler functions. */
-		case GET_ITEMS:
-			request = handleGetItems(request);
+		/* TODO: Missing REMOVE_USER, GET_USERS */
+		/* ProductManager */
+		case GET_CATEGORIES:
+			request = handleGetCategories(request);
 			break;
+		case GET_PRODUCTS:
+			request = handleGetProducts(request);
+			break;
+		/* TODO: Missing ADD_PRODUCT, REMOVE_PRODUCT */
 		default:
 			request.requestType = RequestType.REQUEST_FAILED;
 			request.data = new ServerError("Unsupporter reuqest.").toJson();
@@ -162,13 +171,25 @@ public class EchoServer extends AbstractServer {
 		return request;
 	}
 
-	private Request handleGetItems(Request request) {
+	private Request handleGetCategories(Request request) {
 		/*
-		 * requestType.GET_ITEMS
-		 * 
-		 * TODO: not implemented.
+		 * requestType.GET_CATEGORIES
 		 */
+		CategoriesList categoriesList = new CategoriesList();
+		categoriesList.items = new ArrayList<String>();
+		categoriesList.items.addAll(manager.getProductManager(request.user).getCategories());
+		request.data = categoriesList.toJson();
+		return request;
+	}
 
+	private Request handleGetProducts(Request request) {
+		/*
+		 * requestType.GET_PRODUCTS
+		 */
+		ProductList productList = ProductList.fromJson(request.data);
+		productList = manager.getProductManager(request.user).getProducts(productList.category, productList.start,
+				productList.amount);
+		request.data = productList.toJson();
 		return request;
 	}
 }

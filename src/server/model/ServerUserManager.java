@@ -17,7 +17,7 @@ public class ServerUserManager extends BaseSQL implements UserManager {
 	 */
 
 	/* SQL SCHEMA: */
-	protected static String TABLE_NAME = "users";
+	private static String TABLE_NAME = "users";
 	private static String USERNAME = "username"; // key
 	private static String PASSWORD = "password";
 	private static String NICKNAME = "nickname";

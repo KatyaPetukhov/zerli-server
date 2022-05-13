@@ -5,6 +5,7 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 
 import common.Role;
+import common.interfaces.ProductManager;
 import common.interfaces.UserManager;
 import common.request_data.User;
 
@@ -69,7 +70,7 @@ public class DBManager {
 		Class.forName(DRIVER_CLASS).newInstance();
 		return DriverManager.getConnection(serverURL, username, password);
 	}
-	
+
 	public void createDatabase() {
 		String query = "CREATE DATABASE IF NOT EXISTS " + DEFAULT_DATABASE + ";";
 		String oldUrl = serverURL;
@@ -92,7 +93,7 @@ public class DBManager {
 		}
 		return null;
 	}
-	
+
 	public User validateUser(User user) {
 		/*
 		 * Return null if user is incorrect or does not match the password or role.
@@ -118,5 +119,15 @@ public class DBManager {
 		}
 		isConnected = true;
 		return true;
+	}
+
+	public ProductManager getProductManager(User requestedBy) {
+		try {
+			return new ServerProductManager(requestedBy, getConnection());
+		} catch (InstantiationException | IllegalAccessException | ClassNotFoundException | SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;
 	}
 }
