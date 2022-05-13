@@ -21,6 +21,7 @@ public class InitializeDB {
 		User manager = new User();
 		manager.userrole = Role.MANAGER;
 		try {
+			model.createDatabase();
 			Connection connection = model.getConnection();
 			ServerUserManager.resetUsers(connection);
 			ServerUserManager userManager = new ServerUserManager(manager, connection);

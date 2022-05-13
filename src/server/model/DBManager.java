@@ -19,7 +19,7 @@ public class DBManager {
 	private static String PREFIX = "jdbc:mysql://";
 	private static String DEFAULT_SERVER = "localhost";
 	private static String DELIMITER = "/";
-	private static String DEFAULT_DATABASE = "yohannostupid";
+	private static String DEFAULT_DATABASE = "zerli_database";
 	private static String POSTFIX = "?serverTimezone=IST";
 
 	private static String DEFAULT_USERNAME = "root";
@@ -59,7 +59,6 @@ public class DBManager {
 		return DEFAULT_PASSWORD;
 	}
 
-	@SuppressWarnings("deprecation")
 	public Connection getConnection()
 			throws SQLException, InstantiationException, IllegalAccessException, ClassNotFoundException {
 		/*
@@ -69,6 +68,19 @@ public class DBManager {
 		 */
 		Class.forName(DRIVER_CLASS).newInstance();
 		return DriverManager.getConnection(serverURL, username, password);
+	}
+	
+	public void createDatabase() {
+		String query = "CREATE DATABASE IF NOT EXISTS " + DEFAULT_DATABASE + ";";
+		String oldUrl = serverURL;
+		serverURL = PREFIX + DEFAULT_SERVER + POSTFIX;
+		try {
+			BaseSQL.runUpdate(getConnection(), query);
+		} catch (InstantiationException | IllegalAccessException | ClassNotFoundException | SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		serverURL = oldUrl;
 	}
 
 	public UserManager getUserManager(User requestedBy) {
