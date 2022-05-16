@@ -120,7 +120,7 @@ public class EchoServer extends AbstractServer {
 		 */
 		System.out.println("Correct user requested.");
 		User toCheck = User.fromJson(request.data);
-		toCheck = manager.getUserManager(request.user).getUser(toCheck.username, toCheck.password);
+		toCheck = manager.validateUser(toCheck);
 		if (toCheck == null) {
 			System.out.println("Incorrect request.");
 			request.data = null;
