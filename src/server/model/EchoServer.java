@@ -136,7 +136,7 @@ public class EchoServer extends AbstractServer {
 		 */
 		User toAdd = User.fromJson(request.data);
 		try {
-			if (!manager.getUserManager(request.user).addNewUser(toAdd.username, toAdd.password, toAdd.nickname,
+			if (!manager.getUserManager(request.user).addNewUser(toAdd.username, toAdd.password, toAdd.nickname,toAdd.shopname,
 					toAdd.userrole, toAdd.approved)) {
 				/* User already exists. */
 				request.requestType = RequestType.REQUEST_FAILED;

@@ -5,6 +5,7 @@ import java.sql.SQLException;
 import java.util.List;
 
 import common.Role;
+import common.Shop;
 import common.interfaces.UserManager.PermissionDenied;
 import common.interfaces.UserManager.WeakPassword;
 import common.request_data.User;
@@ -26,18 +27,18 @@ public class TestBDManager {
 			Connection connection = model.getConnection();
 			ServerUserManager.resetUsers(connection);
 			ServerUserManager userManager = new ServerUserManager(manager, connection);
-			userManager.addNewUser("u", "u", "Katya", Role.CUSTOMER, true);
-			userManager.addNewUser("o", "o", "Jessika", Role.OWNER, true);
-			userManager.addNewUser("m", "m", "Niv", Role.MANAGER, true);
-			userManager.addNewUser("w", "w", "Who", Role.WORKER, true);
-			userManager.addNewUser("s", "s", "Aaron", Role.SUPPORT, false);
+			userManager.addNewUser("u", "u", "Katya",Shop.NONE, Role.CUSTOMER, true);
+			userManager.addNewUser("o", "o", "Jessika",Shop.ALL, Role.OWNER, true);
+			userManager.addNewUser("m", "m", "Niv",Shop.HAIFA, Role.MANAGER, true);
+			userManager.addNewUser("w", "w", "Who",Shop.HAIFA, Role.WORKER, true);
+			userManager.addNewUser("s", "s", "Aaron",Shop.ALL, Role.SUPPORT, true);
 			approved = userManager.getUsers(true, 0, 10);
 			notApproved = userManager.getUsers(false, 0, 10);
 			userManager.approveUser("s");
 			notApprovedEmpty = userManager.getUsers(false, 0, 10);
 			userManager.removeUser("s");
 			userEmpty = userManager.getUser("s", "s");
-			userManager.addNewUser("s", "s", "Aaron", Role.SUPPORT, true);
+			userManager.addNewUser("s", "s", "Aaron",Shop.ALL, Role.SUPPORT, true);
 			user = userManager.getUser("s", "s");
 		} catch (InstantiationException | IllegalAccessException | ClassNotFoundException | SQLException | WeakPassword
 				| PermissionDenied e) {

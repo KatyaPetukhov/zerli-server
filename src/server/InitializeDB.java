@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 
 import common.Role;
+import common.Shop;
 import common.interfaces.UserManager.PermissionDenied;
 import common.interfaces.UserManager.WeakPassword;
 import common.request_data.ImageFile;
@@ -40,11 +41,11 @@ public class InitializeDB {
 			ServerUserManager.resetUsers(connection);
 			ServerUserManager userManager = new ServerUserManager(manager, connection);
 
-			userManager.addNewUser("u", "u", "Katya", Role.CUSTOMER, true);
-			userManager.addNewUser("o", "o", "Jessika", Role.OWNER, true);
-			userManager.addNewUser("m", "m", "Niv", Role.MANAGER, true);
-			userManager.addNewUser("w", "w", "Who", Role.WORKER, true);
-			userManager.addNewUser("s", "s", "Aaron", Role.SUPPORT, true);
+			userManager.addNewUser("u", "u", "Katya",Shop.NONE, Role.CUSTOMER, true);
+			userManager.addNewUser("o", "o", "Jessika",Shop.ALL, Role.OWNER, true);
+			userManager.addNewUser("m", "m", "Niv",Shop.HAIFA, Role.MANAGER, true);
+			userManager.addNewUser("w", "w", "Who",Shop.HAIFA, Role.WORKER, true);
+			userManager.addNewUser("s", "s", "Aaron",Shop.ALL, Role.SUPPORT, true);
 		} catch (WeakPassword | PermissionDenied e) {
 			e.printStackTrace();
 		}

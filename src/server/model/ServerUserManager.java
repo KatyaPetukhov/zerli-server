@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import common.Role;
+import common.Shop;
 import common.interfaces.UserManager;
 import common.request_data.User;
 
@@ -22,6 +23,7 @@ public class ServerUserManager extends BaseSQL implements UserManager {
 	private static String PASSWORD = "password";
 	private static String NICKNAME = "nickname";
 	private static String USERROLE = "userrole"; // varchar
+	private static String SHOP_NAME = "ShopName";
 	private static String APPROVED = "approved"; // boolean
 
 	private static String VARCHAR = " varchar(255)";
@@ -61,7 +63,7 @@ public class ServerUserManager extends BaseSQL implements UserManager {
 			e.printStackTrace();
 		}
 		query = "CREATE TABLE " + TABLE_NAME + " (" + USERNAME + VARCHAR + ", " + PASSWORD + VARCHAR + ", " + NICKNAME
-				+ VARCHAR + ", " + USERROLE + VARCHAR + ", " + APPROVED + BOOLEAN + ", PRIMARY KEY (" + USERNAME
+				+ VARCHAR + ", " + SHOP_NAME + VARCHAR + ", "+ USERROLE + VARCHAR + ", " + APPROVED + BOOLEAN + ", PRIMARY KEY (" + USERNAME
 				+ "));";
 		try {
 			runUpdate(connection, query);
@@ -82,6 +84,7 @@ public class ServerUserManager extends BaseSQL implements UserManager {
 				user.username = rs.getString(USERNAME);
 				user.password = rs.getString(PASSWORD);
 				user.nickname = rs.getString(NICKNAME);
+				user.shopname = Shop.valueOf(rs.getString(SHOP_NAME));
 				user.approved = (rs.getInt(APPROVED) != 0 ? true : false);
 				user.userrole = Role.valueOf(rs.getString(USERROLE));
 				if (!user.password.equals(password)) {
@@ -96,14 +99,14 @@ public class ServerUserManager extends BaseSQL implements UserManager {
 	}
 
 	@Override
-	public boolean addNewUser(String username, String password, String nickname, Role role, boolean approved)
+	public boolean addNewUser(String username, String password, String nickname,Shop shopname, Role role, boolean approved)
 			throws WeakPassword, PermissionDenied {
 		if (!isManager && approved == true) {
 			throw new PermissionDenied();
 		}
 		checkPasswordStrength(password);
 		String query = "INSERT INTO " + TABLE_NAME + " VALUES (" + "'" + username + "', " + "'" + password + "', " + "'"
-				+ nickname + "', " + "'" + role.name() + "', " + (approved ? 1 : 0) + ");";
+				+ nickname + "', " + "'" + shopname.name() +  "', " + "'" + role.name() + "', " + (approved ? 1 : 0) + ");";
 		try {
 			runUpdate(connection, query);
 		} catch (SQLException e) {
@@ -161,6 +164,7 @@ public class ServerUserManager extends BaseSQL implements UserManager {
 				user.username = rs.getString(USERNAME);
 				user.password = rs.getString(PASSWORD);
 				user.nickname = rs.getString(NICKNAME);
+				user.shopname = Shop.valueOf(rs.getString(SHOP_NAME));
 				user.approved = (rs.getInt(APPROVED) != 0 ? true : false);
 				user.userrole = Role.valueOf(rs.getString(USERROLE));
 				users.add(user);

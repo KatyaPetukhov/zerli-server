@@ -5,6 +5,7 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 
 import common.Role;
+import common.Shop;
 import common.interfaces.ProductManager;
 import common.interfaces.UserManager;
 import common.request_data.User;
@@ -45,6 +46,7 @@ public class DBManager {
 		guestUser = new User(Role.GUEST.toString(), null);
 		guestUser.nickname = Role.GUEST.toString();
 		guestUser.userrole = Role.GUEST;
+		guestUser.shopname = Shop.NONE;
 		guestUser.approved = true;
 	}
 
