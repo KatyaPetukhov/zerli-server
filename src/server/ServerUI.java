@@ -13,6 +13,7 @@ import server.model.ServerManager;
 public class ServerUI extends Application {
 	/* Deletes all existing data from default database and adds default values. */
 	private static boolean DO_INITIALIZE = true;
+	//test to delete and antoher one
 	/*
 	 * Stops server together with closing GUI. If false - server will continue
 	 * running.
