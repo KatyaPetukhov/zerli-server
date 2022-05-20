@@ -24,7 +24,7 @@ public class DBManager {
 	private static String POSTFIX = "?serverTimezone=IST";
 
 	private static String DEFAULT_USERNAME = "root";
-	private static String DEFAULT_PASSWORD = "12345";
+	private static String DEFAULT_PASSWORD = "Aa123456";
 
 	private String serverURL;
 	private String username;
