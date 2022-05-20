@@ -16,7 +16,7 @@ public class BaseSQL {
 		 * Modifies SQL without returning result. Returns 1 if modification was
 		 * successful.
 		 */
-		System.out.println(query);
+		//System.out.println(query);
 		return connection.prepareStatement(query).executeUpdate();
 	}
 }
