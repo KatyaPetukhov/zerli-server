@@ -71,6 +71,23 @@ public class ServerUserManager extends BaseSQL implements UserManager {
 			e.printStackTrace();
 		}
 	}
+	
+	public static void resetOrders(Connection connection) {
+		String query = "DROP TABLE IF EXISTS " + "orders" + ";";
+		try {
+			runUpdate(connection, query);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		query = "CREATE TABLE " + "orders" + " (" + USERNAME + VARCHAR + ", " + "OrderID" + VARCHAR + ", " + SHOP_NAME + VARCHAR + ", "+ APPROVED + VARCHAR + ", PRIMARY KEY (" + USERNAME
+				+ "));";
+		try {
+			runUpdate(connection, query);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+
+	}
 
 	/* Interface functions: */
 	@Override
@@ -107,6 +124,21 @@ public class ServerUserManager extends BaseSQL implements UserManager {
 		checkPasswordStrength(password);
 		String query = "INSERT INTO " + TABLE_NAME + " VALUES (" + "'" + username + "', " + "'" + password + "', " + "'"
 				+ nickname + "', " + "'" + shopname.name() +  "', " + "'" + role.name() + "', " + (approved ? 1 : 0) + ");";
+		try {
+			runUpdate(connection, query);
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return false;
+		}
+		return true;
+	}
+	
+	@Override
+	public boolean addNewOrder(String username, String orderID, Shop shopname, String approved)
+			throws WeakPassword, PermissionDenied {
+		// TODO Auto-generated method stub
+		String query = "INSERT INTO " + "orders" + " VALUES (" + "'" + username + "', " + "'" + orderID + "', " + 
+		"'" + shopname.name() +  "', " + "'" + approved + "');";
 		try {
 			runUpdate(connection, query);
 		} catch (SQLException e) {
@@ -180,4 +212,6 @@ public class ServerUserManager extends BaseSQL implements UserManager {
 			throw new WeakPassword("Password cannot be empty.");
 		}
 	}
+
+	
 }

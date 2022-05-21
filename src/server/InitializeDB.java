@@ -28,10 +28,27 @@ public class InitializeDB {
 		}
 		addUsers(connection);
 		addProducts(connection);
+		addOrders(connection);
 	}
+	
 
 	private void createDatabase(DBManager model) {
 		model.createDatabase();
+	}
+
+
+	private void addOrders(Connection connection) {
+		// TODO Auto-generated method stub
+		User manager = new User();
+		manager.userrole = Role.CUSTOMER;
+		try {
+			ServerUserManager.resetOrders(connection);
+			ServerUserManager userManager = new ServerUserManager(manager, connection);
+
+			userManager.addNewOrder("u", "123", Shop.HAIFA, "Pendig approvel");
+		} catch (WeakPassword | PermissionDenied e) {
+			e.printStackTrace();
+		}
 	}
 
 	private void addUsers(Connection connection) {
