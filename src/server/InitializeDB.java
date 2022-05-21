@@ -29,11 +29,26 @@ public class InitializeDB {
 		addUsers(connection);
 		addProducts(connection);
 		addOrders(connection);
+		addReports(connection);
 	}
 	
-
 	private void createDatabase(DBManager model) {
 		model.createDatabase();
+	}
+	
+	private void addReports(Connection connection) {
+		// TODO Auto-generated method stub
+		User manager = new User();
+		manager.userrole = Role.MANAGER;
+		try {
+			ServerUserManager.resetIncomeReports(connection);
+			ServerUserManager userManager = new ServerUserManager(manager, connection);
+
+			userManager.addNewReport(Shop.HAIFA, "2020", "March", "5000", "Flowers", "63");
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
 	}
 
 
@@ -46,7 +61,7 @@ public class InitializeDB {
 			ServerUserManager userManager = new ServerUserManager(manager, connection);
 
 			userManager.addNewOrder("u", "123", Shop.HAIFA, "Pendig approvel");
-		} catch (WeakPassword | PermissionDenied e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}

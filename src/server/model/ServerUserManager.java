@@ -88,6 +88,34 @@ public class ServerUserManager extends BaseSQL implements UserManager {
 		}
 
 	}
+	
+	public static void resetIncomeReports(Connection connection) {
+		String query = "DROP TABLE IF EXISTS " + "income_reports" + ";";
+		try {
+			runUpdate(connection, query);
+		} catch (SQLException e) {
+			e.printStackTrace();
+			}
+		query = "CREATE TABLE " + "income_reports" + " (" + SHOP_NAME + VARCHAR + ", " + "Year" + VARCHAR + ", " + "Month" + VARCHAR + ", "+ "Income" + VARCHAR +
+				", " + "BestSellingProduct" + VARCHAR + ", " + "TotalNumberOfOrders" + VARCHAR + ", PRIMARY KEY (" + SHOP_NAME + "));";
+		try {
+			runUpdate(connection, query);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public boolean addNewReport(Shop shop,String year,String month,String Income,String BSI,String TNO) {
+		String query = "INSERT INTO " + "income_reports" + " VALUES (" + "'" + shop.name() + "', " + "'" + year + "', " + "'"
+				+ month + "', " + "'" + Income +  "', " + "'" + BSI + "', " + TNO + ");";
+		try {
+			runUpdate(connection, query);
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return false;
+		}
+		return true;
+	}
 
 	/* Interface functions: */
 	@Override
