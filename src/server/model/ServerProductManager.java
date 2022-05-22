@@ -161,6 +161,7 @@ public class ServerProductManager extends BaseSQL implements ProductManager {
 		try {
 			String query = "INSERT INTO " + TABLE_NAME + " VALUES (" + "'" + product.name + "', " + "'" + product.category + "', " + "'"
 					+ product.price + "', " + "'" + product.discount + "', "+ "'" + product.imageString +"'"+ ");";
+			System.out.println("QUERY TO SQL : " + query);
 			runUpdate(connection, query);
 			
 		} catch (SQLException e) {

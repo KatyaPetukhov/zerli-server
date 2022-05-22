@@ -8,6 +8,7 @@ import common.RequestType;
 import common.interfaces.UserManager.PermissionDenied;
 import common.interfaces.UserManager.WeakPassword;
 import common.request_data.CategoriesList;
+import common.request_data.Product;
 import common.request_data.ProductList;
 import common.request_data.ServerError;
 import common.request_data.User;
@@ -94,6 +95,9 @@ public class EchoServer extends AbstractServer {
 			break;
 		case GET_PRODUCTS:
 			request = handleGetProducts(request);
+			break;
+		case GET_PRODUCT:
+			request = handleGetProduct(request);
 			break;
 		/* TODO: Missing ADD_PRODUCT, REMOVE_PRODUCT */
 		default:
@@ -190,6 +194,24 @@ public class EchoServer extends AbstractServer {
 		productList = manager.getProductManager(request.user).getProducts(productList.category, productList.start,
 				productList.amount);
 		request.data = productList.toJson();
+		return request;
+	}
+	private Request handleGetProduct(Request request) {
+		/*
+		 * requestType.GET_PRODUCT
+		 */
+		
+	
+		Product product = Product.fromJson(request.data);
+		product = manager.getProductManager(request.user).getProduct(product.name);
+		request.data = product.toJson();
+		if (product == null) {
+			System.out.println("Incorrect request.");
+			request.data = null;
+		} else {
+			request.data = product.toJson();
+		}
+		
 		return request;
 	}
 }
