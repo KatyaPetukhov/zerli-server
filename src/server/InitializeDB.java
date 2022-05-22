@@ -13,7 +13,7 @@ import common.request_data.User;
 import server.model.DBManager;
 import server.model.ServerProductManager;
 import server.model.ServerUserManager;
-
+//Jessica
 public class InitializeDB {
 	/* Add a default set of data that is enough to play with the application. */
 	public void f(DBManager model) {
