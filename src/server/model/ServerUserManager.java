@@ -9,6 +9,7 @@ import java.util.List;
 import common.Role;
 import common.Shop;
 import common.interfaces.UserManager;
+import common.request_data.IncomeReport;
 import common.request_data.User;
 
 public class ServerUserManager extends BaseSQL implements UserManager {
@@ -28,6 +29,8 @@ public class ServerUserManager extends BaseSQL implements UserManager {
 
 	private static String VARCHAR = " varchar(255)";
 	private static String BOOLEAN = " boolean";
+	
+	private List<IncomeReport> allShopIncomeReportList;
 	/* End SQL SCHEMA */
 
 	private User requestedBy;
@@ -41,6 +44,7 @@ public class ServerUserManager extends BaseSQL implements UserManager {
 	}
 
 	/* Not interface function: */
+	
 	public static boolean test(Connection connection) {
 		/*
 		 * Tests connection to a table, just to validate that table is available. Can be
@@ -97,7 +101,7 @@ public class ServerUserManager extends BaseSQL implements UserManager {
 			e.printStackTrace();
 			}
 		query = "CREATE TABLE " + "income_reports" + " (" + SHOP_NAME + VARCHAR + ", " + "Year" + VARCHAR + ", " + "Month" + VARCHAR + ", "+ "Income" + VARCHAR +
-				", " + "BestSellingProduct" + VARCHAR + ", " + "TotalNumberOfOrders" + VARCHAR + ", PRIMARY KEY (" + SHOP_NAME + "));";
+				", " + "BestSellingProduct" + VARCHAR + ", " + "TotalNumberOfOrders" + VARCHAR + ");";
 		try {
 			runUpdate(connection, query);
 		} catch (SQLException e) {
@@ -105,19 +109,15 @@ public class ServerUserManager extends BaseSQL implements UserManager {
 		}
 	}
 	
-	public boolean addNewReport(Shop shop,String year,String month,String Income,String BSI,String TNO) {
-		String query = "INSERT INTO " + "income_reports" + " VALUES (" + "'" + shop.name() + "', " + "'" + year + "', " + "'"
-				+ month + "', " + "'" + Income +  "', " + "'" + BSI + "', " + TNO + ");";
-		try {
-			runUpdate(connection, query);
-		} catch (SQLException e) {
-			e.printStackTrace();
-			return false;
-		}
-		return true;
-	}
 
 	/* Interface functions: */
+	@Override
+	public IncomeReport getAllIncomeReports(){
+		IncomeReport r = allShopIncomeReportList.get(allShopIncomeReportList.size()-1);
+		allShopIncomeReportList.remove(allShopIncomeReportList.size()-1);
+		return r;
+	}
+	
 	@Override
 	public User getUser(String username, String password) {
 		String query = "SELECT * FROM " + TABLE_NAME + " WHERE " + USERNAME + "='" + username + "';";
@@ -234,11 +234,79 @@ public class ServerUserManager extends BaseSQL implements UserManager {
 		}
 		return users;
 	}
+	
+	@Override
+	public boolean addNewIncomeReport(Shop shop,String year,String month,String Income,String BSI,String TNO) {
+		String query = "INSERT INTO " + "income_reports" + " VALUES (" + "'" + shop.name() + "', " + "'" + year + "', " + "'"
+				+ month + "', " + "'" + Income +  "', " + "'" + BSI + "', " + TNO + ");";
+		try {
+			runUpdate(connection, query);
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return false;
+		}
+		return true;
+	}
 
 	private static void checkPasswordStrength(String password) throws WeakPassword {
 		if (password == null || password.isEmpty()) {
 			throw new WeakPassword("Password cannot be empty.");
 		}
+	}
+
+	@Override
+	public IncomeReport getIncomeReport(Shop shop, String year, String month) throws SQLException {
+		IncomeReport incomeReport = new IncomeReport();
+		allShopIncomeReportList = new ArrayList<>();
+		//Get the report the user asked for
+		String query = "SELECT * FROM income_reports WHERE ShopName = '" + shop.name() + "' AND Year = '" + year + "' AND Month = '" + month + "';";
+		try {
+			ResultSet rs = runQuery(connection, query);
+			
+			while (rs.next()) {
+				
+				incomeReport.shop = shop;
+				incomeReport.year = year;
+				incomeReport.month = month;
+				incomeReport.income = rs.getString("Income");
+				incomeReport.bestSellingProduct = rs.getString("BestSellingProduct");
+				incomeReport.totalNumberOfOrders = rs.getString("TotalNumberOfOrders");
+		
+			
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		
+		// Get the income of other shops for the same year and months
+		Shop[] allShops = Shop.values();
+		for(Shop s: allShops) {
+			if(!s.toString().equals(shop.toString())) {
+				query = "SELECT * FROM income_reports WHERE ShopName = '" + s.name() + "' AND Year = '" + year + "' AND Month = '" + month + "';";
+				try {
+					ResultSet rs = runQuery(connection, query);
+					
+					while (rs.next()) {
+						IncomeReport incomeReportM = new IncomeReport();
+						incomeReportM.shop = shop;
+						incomeReportM.year = year;
+						incomeReportM.month = month;
+						incomeReportM.income = rs.getString("Income");
+						incomeReportM.bestSellingProduct = rs.getString("BestSellingProduct");
+						incomeReportM.totalNumberOfOrders = rs.getString("TotalNumberOfOrders");
+						
+						allShopIncomeReportList.add(incomeReportM);
+						
+						
+					}
+					
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+		System.out.println(incomeReport.income + "GOT TO GET INCOMEREPORT FUNCTION");
+		return incomeReport;
 	}
 
 	

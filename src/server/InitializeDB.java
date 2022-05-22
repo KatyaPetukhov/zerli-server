@@ -44,7 +44,7 @@ public class InitializeDB {
 			ServerUserManager.resetIncomeReports(connection);
 			ServerUserManager userManager = new ServerUserManager(manager, connection);
 
-			userManager.addNewReport(Shop.HAIFA, "2020", "March", "5000", "Flowers", "63");
+			addRports(userManager);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -113,5 +113,36 @@ public class InitializeDB {
 		productManager.addProduct(new Product("0.6m Red Rose", 10.0, 0, "Retail",
 				ImageFile.asEncodedString("./src/server/gallery/r2.jpg")));
 
+	}
+	
+	
+	private void addRports(ServerUserManager userManager) {
+		// add reports to HAIFA SHOP
+		userManager.addNewIncomeReport(Shop.HAIFA, "2020", "January", "5000", "Flowers", "40");
+		userManager.addNewIncomeReport(Shop.HAIFA, "2020", "February", "4760", "Flowers", "19");
+		userManager.addNewIncomeReport(Shop.HAIFA, "2020", "March", "6020", "Flowers", "35");
+		userManager.addNewIncomeReport(Shop.HAIFA, "2020", "April", "3000", "Flowers", "20");
+		userManager.addNewIncomeReport(Shop.HAIFA, "2020", "May", "1500", "Flowers", "11");
+		userManager.addNewIncomeReport(Shop.HAIFA, "2020", "June", "730", "Flowers", "6");
+		userManager.addNewIncomeReport(Shop.HAIFA, "2020", "July", "680", "Flowers", "4");
+		userManager.addNewIncomeReport(Shop.HAIFA, "2020", "August", "1356", "Flowers", "12");
+		userManager.addNewIncomeReport(Shop.HAIFA, "2020", "September", "2377", "Flowers", "15");
+		userManager.addNewIncomeReport(Shop.HAIFA, "2020", "October", "2985", "Flowers", "21");
+		userManager.addNewIncomeReport(Shop.HAIFA, "2020", "November", "5505", "Flowers", "45");
+		userManager.addNewIncomeReport(Shop.HAIFA, "2020", "December", "7300", "Flowers", "63");
+
+		userManager.addNewIncomeReport(Shop.HAIFA, "2021", "January", "3450", "Flowers", "22");
+		userManager.addNewIncomeReport(Shop.HAIFA, "2021", "February", "4530", "Flowers", "32");
+		userManager.addNewIncomeReport(Shop.HAIFA, "2021", "March", "8000", "Flowers", "60");
+		userManager.addNewIncomeReport(Shop.HAIFA, "2021", "April", "9210", "Flowers", "85");
+		userManager.addNewIncomeReport(Shop.HAIFA, "2021", "May", "5760", "Flowers", "46");
+		userManager.addNewIncomeReport(Shop.HAIFA, "2021", "June", "350", "Flowers", "4");
+		userManager.addNewIncomeReport(Shop.HAIFA, "2021", "July", "210", "Flowers", "2");
+		userManager.addNewIncomeReport(Shop.HAIFA, "2021", "August", "860", "Flowers", "7");
+		userManager.addNewIncomeReport(Shop.HAIFA, "2021", "September", "9780", "Flowers", "100");
+		userManager.addNewIncomeReport(Shop.HAIFA, "2021", "October", "1750", "Flowers", "9");
+		userManager.addNewIncomeReport(Shop.HAIFA, "2021", "November", "2800", "Flowers", "27");
+		userManager.addNewIncomeReport(Shop.HAIFA, "2021", "December", "1600", "Flowers", "13");
+		
 	}
 }

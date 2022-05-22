@@ -1,6 +1,7 @@
 package server.model;
 
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.ArrayList;
 
 import common.Request;
@@ -8,6 +9,7 @@ import common.RequestType;
 import common.interfaces.UserManager.PermissionDenied;
 import common.interfaces.UserManager.WeakPassword;
 import common.request_data.CategoriesList;
+import common.request_data.IncomeReport;
 import common.request_data.ProductList;
 import common.request_data.ServerError;
 import common.request_data.User;
@@ -95,6 +97,22 @@ public class EchoServer extends AbstractServer {
 		case GET_PRODUCTS:
 			request = handleGetProducts(request);
 			break;
+		case GET_INCOME_REPORT:
+			try {
+				request = handleGetIncomeReports(request);
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			break;
+		case GET_INCOME_REPORT_BC:
+			try {
+				request = handleGetIncomeReportsBC(request);
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			break;
 		/* TODO: Missing ADD_PRODUCT, REMOVE_PRODUCT */
 		default:
 			request.requestType = RequestType.REQUEST_FAILED;
@@ -103,6 +121,35 @@ public class EchoServer extends AbstractServer {
 		}
 
 		respond(client, request);
+	}
+
+	private Request handleGetIncomeReportsBC(Request request) throws SQLException {
+		IncomeReport incomeReport = IncomeReport.fromJson(request.data);
+		incomeReport = manager.getIncomeReport(incomeReport);
+		if (incomeReport == null) {
+			System.out.println("Incorrect request.");
+			request.data = null;
+		} else {
+			request.data = incomeReport.toJson();
+		}
+		return request;
+	
+	}
+
+	private Request handleGetIncomeReports(Request request) throws SQLException {
+		/*
+		 * requestType.GET_INCOME_REPORT
+		 */
+		IncomeReport incomeReport = IncomeReport.fromJson(request.data);
+		incomeReport = manager.getIncomeReport(incomeReport);
+		if (incomeReport == null) {
+			System.out.println("Incorrect request.");
+			request.data = null;
+		} else {
+			request.data = incomeReport.toJson();
+		}
+		return request;
+		
 	}
 
 	private void respond(ConnectionToClient client, Request request) {
