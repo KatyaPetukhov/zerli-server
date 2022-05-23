@@ -8,7 +8,7 @@ import common.Role;
 import common.Shop;
 import common.interfaces.ProductManager;
 import common.interfaces.UserManager;
-import common.request_data.IncomeReport;
+//import common.request_data.IncomeReport;
 import common.request_data.User;
 
 public class DBManager {
@@ -134,11 +134,11 @@ public class DBManager {
 		return null;
 	}
 	
-	public IncomeReport getIncomeReport(IncomeReport r) throws SQLException {
-		return getUserManager(null).getIncomeReport(r.shop, r.year, r.month);
-	}
-	
-	public IncomeReport getIncomeReportBC() {
-		return getUserManager(null).getAllIncomeReports();
-	}
+//	public IncomeReport getIncomeReport(IncomeReport r) throws SQLException {
+//		return getUserManager(null).getIncomeReport(r.shop, r.year, r.month);
+//	}
+//	
+//	public IncomeReport getIncomeReportBC() {
+//		return getUserManager(null).getAllIncomeReports();
+//	}
 }

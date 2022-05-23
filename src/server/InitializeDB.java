@@ -13,7 +13,7 @@ import common.request_data.User;
 import server.model.DBManager;
 import server.model.ServerProductManager;
 import server.model.ServerUserManager;
-//Jessica
+
 public class InitializeDB {
 	/* Add a default set of data that is enough to play with the application. */
 	public void f(DBManager model) {
@@ -28,14 +28,14 @@ public class InitializeDB {
 		}
 		addUsers(connection);
 		addProducts(connection);
-		addOrders(connection);
-		addReports(connection);
+		// addOrders(connection);
+		// addReports(connection);
 	}
-	
+
 	private void createDatabase(DBManager model) {
 		model.createDatabase();
 	}
-	
+
 	private void addReports(Connection connection) {
 		// TODO Auto-generated method stub
 		User manager = new User();
@@ -44,27 +44,26 @@ public class InitializeDB {
 			ServerUserManager.resetIncomeReports(connection);
 			ServerUserManager userManager = new ServerUserManager(manager, connection);
 
-			addRports(userManager);
+			// addRports(userManager);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		
+
 	}
 
-
-	private void addOrders(Connection connection) {
-		// TODO Auto-generated method stub
-		User manager = new User();
-		manager.userrole = Role.CUSTOMER;
-		try {
-			ServerUserManager.resetOrders(connection);
-			ServerUserManager userManager = new ServerUserManager(manager, connection);
-
-			userManager.addNewOrder("u", "123", Shop.HAIFA, "Pendig approvel");
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
+//	private void addOrders(Connection connection) {
+//		// TODO Auto-generated method stub
+//		User manager = new User();
+//		manager.userrole = Role.CUSTOMER;
+//		try {
+//			ServerUserManager.resetOrders(connection);
+//			ServerUserManager userManager = new ServerUserManager(manager, connection);
+//
+//			userManager.addNewOrder("u", "123", Shop.HAIFA, "Pendig approvel");
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//		}
+//	}
 
 	private void addUsers(Connection connection) {
 		User manager = new User();
@@ -73,11 +72,11 @@ public class InitializeDB {
 			ServerUserManager.resetUsers(connection);
 			ServerUserManager userManager = new ServerUserManager(manager, connection);
 
-			userManager.addNewUser("u", "u", "Katya",Shop.NONE, Role.CUSTOMER, true);
-			userManager.addNewUser("o", "o", "Jessika",Shop.ALL, Role.OWNER, true);
-			userManager.addNewUser("m", "m", "Niv",Shop.HAIFA, Role.MANAGER, true);
-			userManager.addNewUser("w", "w", "Who",Shop.HAIFA, Role.WORKER, true);
-			userManager.addNewUser("s", "s", "Aaron",Shop.ALL, Role.SUPPORT, true);
+			userManager.addNewUser("u", "u", "Katya", Shop.NONE, Role.CUSTOMER, true);
+			userManager.addNewUser("o", "o", "Jessika", Shop.ALL, Role.OWNER, true);
+			userManager.addNewUser("m", "m", "Niv", Shop.HAIFA, Role.MANAGER, true);
+			userManager.addNewUser("w", "w", "Who", Shop.HAIFA, Role.WORKER, true);
+			userManager.addNewUser("s", "s", "Aaron", Shop.ALL, Role.SUPPORT, true);
 		} catch (WeakPassword | PermissionDenied e) {
 			e.printStackTrace();
 		}
@@ -114,35 +113,34 @@ public class InitializeDB {
 				ImageFile.asEncodedString("./src/server/gallery/r2.jpg")));
 
 	}
-	
-	
-	private void addRports(ServerUserManager userManager) {
-		// add reports to HAIFA SHOP
-		userManager.addNewIncomeReport(Shop.HAIFA, "2020", "January", "5000", "Flowers", "40");
-		userManager.addNewIncomeReport(Shop.HAIFA, "2020", "February", "4760", "Flowers", "19");
-		userManager.addNewIncomeReport(Shop.HAIFA, "2020", "March", "6020", "Flowers", "35");
-		userManager.addNewIncomeReport(Shop.HAIFA, "2020", "April", "3000", "Flowers", "20");
-		userManager.addNewIncomeReport(Shop.HAIFA, "2020", "May", "1500", "Flowers", "11");
-		userManager.addNewIncomeReport(Shop.HAIFA, "2020", "June", "730", "Flowers", "6");
-		userManager.addNewIncomeReport(Shop.HAIFA, "2020", "July", "680", "Flowers", "4");
-		userManager.addNewIncomeReport(Shop.HAIFA, "2020", "August", "1356", "Flowers", "12");
-		userManager.addNewIncomeReport(Shop.HAIFA, "2020", "September", "2377", "Flowers", "15");
-		userManager.addNewIncomeReport(Shop.HAIFA, "2020", "October", "2985", "Flowers", "21");
-		userManager.addNewIncomeReport(Shop.HAIFA, "2020", "November", "5505", "Flowers", "45");
-		userManager.addNewIncomeReport(Shop.HAIFA, "2020", "December", "7300", "Flowers", "63");
 
-		userManager.addNewIncomeReport(Shop.HAIFA, "2021", "January", "3450", "Flowers", "22");
-		userManager.addNewIncomeReport(Shop.HAIFA, "2021", "February", "4530", "Flowers", "32");
-		userManager.addNewIncomeReport(Shop.HAIFA, "2021", "March", "8000", "Flowers", "60");
-		userManager.addNewIncomeReport(Shop.HAIFA, "2021", "April", "9210", "Flowers", "85");
-		userManager.addNewIncomeReport(Shop.HAIFA, "2021", "May", "5760", "Flowers", "46");
-		userManager.addNewIncomeReport(Shop.HAIFA, "2021", "June", "350", "Flowers", "4");
-		userManager.addNewIncomeReport(Shop.HAIFA, "2021", "July", "210", "Flowers", "2");
-		userManager.addNewIncomeReport(Shop.HAIFA, "2021", "August", "860", "Flowers", "7");
-		userManager.addNewIncomeReport(Shop.HAIFA, "2021", "September", "9780", "Flowers", "100");
-		userManager.addNewIncomeReport(Shop.HAIFA, "2021", "October", "1750", "Flowers", "9");
-		userManager.addNewIncomeReport(Shop.HAIFA, "2021", "November", "2800", "Flowers", "27");
-		userManager.addNewIncomeReport(Shop.HAIFA, "2021", "December", "1600", "Flowers", "13");
-		
-	}
+//	private void addRports(ServerUserManager userManager) {
+//		// add reports to HAIFA SHOP
+//		userManager.addNewIncomeReport(Shop.HAIFA, "2020", "January", "5000", "Flowers", "40");
+//		userManager.addNewIncomeReport(Shop.HAIFA, "2020", "February", "4760", "Flowers", "19");
+//		userManager.addNewIncomeReport(Shop.HAIFA, "2020", "March", "6020", "Flowers", "35");
+//		userManager.addNewIncomeReport(Shop.HAIFA, "2020", "April", "3000", "Flowers", "20");
+//		userManager.addNewIncomeReport(Shop.HAIFA, "2020", "May", "1500", "Flowers", "11");
+//		userManager.addNewIncomeReport(Shop.HAIFA, "2020", "June", "730", "Flowers", "6");
+//		userManager.addNewIncomeReport(Shop.HAIFA, "2020", "July", "680", "Flowers", "4");
+//		userManager.addNewIncomeReport(Shop.HAIFA, "2020", "August", "1356", "Flowers", "12");
+//		userManager.addNewIncomeReport(Shop.HAIFA, "2020", "September", "2377", "Flowers", "15");
+//		userManager.addNewIncomeReport(Shop.HAIFA, "2020", "October", "2985", "Flowers", "21");
+//		userManager.addNewIncomeReport(Shop.HAIFA, "2020", "November", "5505", "Flowers", "45");
+//		userManager.addNewIncomeReport(Shop.HAIFA, "2020", "December", "7300", "Flowers", "63");
+//
+//		userManager.addNewIncomeReport(Shop.HAIFA, "2021", "January", "3450", "Flowers", "22");
+//		userManager.addNewIncomeReport(Shop.HAIFA, "2021", "February", "4530", "Flowers", "32");
+//		userManager.addNewIncomeReport(Shop.HAIFA, "2021", "March", "8000", "Flowers", "60");
+//		userManager.addNewIncomeReport(Shop.HAIFA, "2021", "April", "9210", "Flowers", "85");
+//		userManager.addNewIncomeReport(Shop.HAIFA, "2021", "May", "5760", "Flowers", "46");
+//		userManager.addNewIncomeReport(Shop.HAIFA, "2021", "June", "350", "Flowers", "4");
+//		userManager.addNewIncomeReport(Shop.HAIFA, "2021", "July", "210", "Flowers", "2");
+//		userManager.addNewIncomeReport(Shop.HAIFA, "2021", "August", "860", "Flowers", "7");
+//		userManager.addNewIncomeReport(Shop.HAIFA, "2021", "September", "9780", "Flowers", "100");
+//		userManager.addNewIncomeReport(Shop.HAIFA, "2021", "October", "1750", "Flowers", "9");
+//		userManager.addNewIncomeReport(Shop.HAIFA, "2021", "November", "2800", "Flowers", "27");
+//		userManager.addNewIncomeReport(Shop.HAIFA, "2021", "December", "1600", "Flowers", "13");
+//		
+//	}
 }
