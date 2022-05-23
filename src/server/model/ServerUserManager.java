@@ -30,7 +30,7 @@ public class ServerUserManager extends BaseSQL implements UserManager {
 	private static String VARCHAR = " varchar(255)";
 	private static String BOOLEAN = " boolean";
 	
-	private List<IncomeReport> allShopIncomeReportList;
+	private static List<IncomeReport> allShopIncomeReportList = new ArrayList<IncomeReport>();
 	/* End SQL SCHEMA */
 
 	private User requestedBy;
@@ -113,7 +113,9 @@ public class ServerUserManager extends BaseSQL implements UserManager {
 	/* Interface functions: */
 	@Override
 	public IncomeReport getAllIncomeReports(){
+		System.out.println(allShopIncomeReportList.size() + " Size of list kaka ");
 		IncomeReport r = allShopIncomeReportList.get(allShopIncomeReportList.size()-1);
+		
 		allShopIncomeReportList.remove(allShopIncomeReportList.size()-1);
 		return r;
 	}
@@ -257,7 +259,8 @@ public class ServerUserManager extends BaseSQL implements UserManager {
 	@Override
 	public IncomeReport getIncomeReport(Shop shop, String year, String month) throws SQLException {
 		IncomeReport incomeReport = new IncomeReport();
-		allShopIncomeReportList = new ArrayList<>();
+		
+		
 		//Get the report the user asked for
 		String query = "SELECT * FROM income_reports WHERE ShopName = '" + shop.name() + "' AND Year = '" + year + "' AND Month = '" + month + "';";
 		try {
@@ -271,6 +274,7 @@ public class ServerUserManager extends BaseSQL implements UserManager {
 				incomeReport.income = rs.getString("Income");
 				incomeReport.bestSellingProduct = rs.getString("BestSellingProduct");
 				incomeReport.totalNumberOfOrders = rs.getString("TotalNumberOfOrders");
+				
 		
 			
 			}
@@ -281,8 +285,9 @@ public class ServerUserManager extends BaseSQL implements UserManager {
 		// Get the income of other shops for the same year and months
 		Shop[] allShops = Shop.values();
 		for(Shop s: allShops) {
-			if(!s.toString().equals(shop.toString())) {
+			if(!(s.toString().equals(shop.toString())) && !(s.toString().equals(shop.ALL.toString())) && !(s.toString().equals(shop.NONE.toString()))) {
 				query = "SELECT * FROM income_reports WHERE ShopName = '" + s.name() + "' AND Year = '" + year + "' AND Month = '" + month + "';";
+			
 				try {
 					ResultSet rs = runQuery(connection, query);
 					
@@ -298,6 +303,7 @@ public class ServerUserManager extends BaseSQL implements UserManager {
 						allShopIncomeReportList.add(incomeReportM);
 						
 						
+						
 					}
 					
 				} catch (SQLException e) {
@@ -305,7 +311,7 @@ public class ServerUserManager extends BaseSQL implements UserManager {
 				}
 			}
 		}
-		System.out.println(incomeReport.income + "GOT TO GET INCOMEREPORT FUNCTION");
+		
 		return incomeReport;
 	}
 

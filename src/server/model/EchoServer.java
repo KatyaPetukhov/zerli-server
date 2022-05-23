@@ -124,8 +124,10 @@ public class EchoServer extends AbstractServer {
 	}
 
 	private Request handleGetIncomeReportsBC(Request request) throws SQLException {
-		IncomeReport incomeReport = IncomeReport.fromJson(request.data);
-		incomeReport = manager.getIncomeReport(incomeReport);
+		IncomeReport incomeReport = new IncomeReport();
+		
+		incomeReport = manager.getIncomeReportBC();
+		
 		if (incomeReport == null) {
 			System.out.println("Incorrect request.");
 			request.data = null;

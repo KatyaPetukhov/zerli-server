@@ -139,6 +139,7 @@ public class DBManager {
 	}
 	
 	public IncomeReport getIncomeReportBC() {
+		
 		return getUserManager(null).getAllIncomeReports();
 	}
 }
