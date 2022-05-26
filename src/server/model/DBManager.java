@@ -8,6 +8,7 @@ import common.Role;
 import common.Shop;
 import common.interfaces.ProductManager;
 import common.interfaces.UserManager;
+import common.request_data.ComplaintList;
 //import common.request_data.IncomeReport;
 import common.request_data.User;
 
@@ -109,6 +110,10 @@ public class DBManager {
 		return getUserManager(null).getUser(user.username, user.password);
 	}
 
+	public ComplaintList getAllComplaints(User user) {
+		return getUserManager().getAllComplaints(user.nickname);
+	}
+
 	public boolean isConnected() {
 		if (isConnected) {
 			/* Checked once already. No need to repeat unless something fails. */
@@ -133,7 +138,7 @@ public class DBManager {
 		}
 		return null;
 	}
-	
+
 //	public IncomeReport getIncomeReport(IncomeReport r) throws SQLException {
 //		return getUserManager(null).getIncomeReport(r.shop, r.year, r.month);
 //	}

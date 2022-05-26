@@ -9,6 +9,7 @@ import common.RequestType;
 import common.interfaces.UserManager.PermissionDenied;
 import common.interfaces.UserManager.WeakPassword;
 import common.request_data.CategoriesList;
+import common.request_data.ComplaintList;
 //import common.request_data.IncomeReport;
 import common.request_data.ProductList;
 import common.request_data.ServerError;
@@ -97,6 +98,23 @@ public class EchoServer extends AbstractServer {
 		case GET_PRODUCTS:
 			request = handleGetProducts(request);
 			break;
+		case GET_ALL_COMPLAINTS:
+			try {
+				request = handleGetComplaints(request);
+			} catch (InstantiationException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IllegalAccessException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (ClassNotFoundException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			break;
 //		case GET_INCOME_REPORT:
 //			try {
 //				request = handleGetIncomeReports(request);
@@ -152,6 +170,16 @@ public class EchoServer extends AbstractServer {
 //		
 //	}
 
+	private Request handleGetComplaints(Request request)
+			throws InstantiationException, IllegalAccessException, ClassNotFoundException, SQLException {
+		ComplaintList complaintList = ComplaintList.fromJson(request.data);
+		ServerUserManager serverUserManager = new ServerUserManager(request.user, manager.getConnection());
+		ComplaintList listAllComplaints = serverUserManager.getAllComplaints(request.user.nickname);
+		request.data = listAllComplaints.toJson();
+		System.out.println("request from server : " + request.data);
+		return request;
+	}
+
 	private void respond(ConnectionToClient client, Request request) {
 		try {
 			client.sendToClient(request.toJson());
@@ -183,8 +211,8 @@ public class EchoServer extends AbstractServer {
 		 */
 		User toAdd = User.fromJson(request.data);
 		try {
-			if (!manager.getUserManager(request.user).addNewUser(toAdd.username, toAdd.password, toAdd.nickname,toAdd.shopname,
-					toAdd.userrole, toAdd.approved)) {
+			if (!manager.getUserManager(request.user).addNewUser(toAdd.username, toAdd.password, toAdd.nickname,
+					toAdd.shopname, toAdd.userrole, toAdd.approved)) {
 				/* User already exists. */
 				request.requestType = RequestType.REQUEST_FAILED;
 			}

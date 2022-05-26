@@ -28,6 +28,7 @@ public class InitializeDB {
 		}
 		addUsers(connection);
 		addProducts(connection);
+		addComplaints(connection);
 		// addOrders(connection);
 		// addReports(connection);
 	}
@@ -64,6 +65,20 @@ public class InitializeDB {
 //			e.printStackTrace();
 //		}
 //	}
+	private void addComplaints(Connection connection) {
+		User worker = new User();
+		worker.userrole = Role.WORKER;
+		try {
+			ServerUserManager.resetComplaints(connection);
+			ServerUserManager userManager = new ServerUserManager(worker, connection);
+						
+			userManager.addNewCompliant("Jess", "123", "ugly flower", "1.1.2", "100", "approved","Aaron");
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+			
+		}
+	}
 
 	private void addUsers(Connection connection) {
 		User manager = new User();
