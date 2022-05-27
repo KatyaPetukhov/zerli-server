@@ -10,6 +10,7 @@ import common.interfaces.UserManager.PermissionDenied;
 import common.interfaces.UserManager.WeakPassword;
 import common.request_data.CategoriesList;
 import common.request_data.IncomeReport;
+import common.request_data.IncomeReportList;
 import common.request_data.ProductList;
 import common.request_data.ServerError;
 import common.request_data.User;
@@ -124,15 +125,15 @@ public class EchoServer extends AbstractServer {
 	}
 
 	private Request handleGetIncomeReportsBC(Request request) throws SQLException {
-		IncomeReport incomeReport = new IncomeReport();
+		IncomeReportList incomeReportList = new IncomeReportList();
 		
-		incomeReport = manager.getIncomeReportBC();
+		incomeReportList = manager.getIncomeReportBC();
 		
-		if (incomeReport == null) {
+		if (incomeReportList == null) {
 			System.out.println("Incorrect request.");
 			request.data = null;
 		} else {
-			request.data = incomeReport.toJson();
+			request.data = incomeReportList.toJson();
 		}
 		return request;
 	

@@ -10,6 +10,7 @@ import common.Role;
 import common.Shop;
 import common.interfaces.UserManager;
 import common.request_data.IncomeReport;
+import common.request_data.IncomeReportList;
 import common.request_data.User;
 
 public class ServerUserManager extends BaseSQL implements UserManager {
@@ -30,7 +31,7 @@ public class ServerUserManager extends BaseSQL implements UserManager {
 	private static String VARCHAR = " varchar(255)";
 	private static String BOOLEAN = " boolean";
 	
-	private static List<IncomeReport> allShopIncomeReportList = new ArrayList<IncomeReport>();
+	private static IncomeReportList incomeReportList = new IncomeReportList();
 	/* End SQL SCHEMA */
 
 	private User requestedBy;
@@ -112,12 +113,9 @@ public class ServerUserManager extends BaseSQL implements UserManager {
 
 	/* Interface functions: */
 	@Override
-	public IncomeReport getAllIncomeReports(){
-		System.out.println(allShopIncomeReportList.size() + " Size of list kaka ");
-		IncomeReport r = allShopIncomeReportList.get(allShopIncomeReportList.size()-1);
+	public IncomeReportList getAllIncomeReports(){
 		
-		allShopIncomeReportList.remove(allShopIncomeReportList.size()-1);
-		return r;
+		return incomeReportList;
 	}
 	
 	@Override
@@ -259,7 +257,7 @@ public class ServerUserManager extends BaseSQL implements UserManager {
 	@Override
 	public IncomeReport getIncomeReport(Shop shop, String year, String month) throws SQLException {
 		IncomeReport incomeReport = new IncomeReport();
-		
+		incomeReportList.Reports = new ArrayList<IncomeReport>();
 		
 		//Get the report the user asked for
 		String query = "SELECT * FROM income_reports WHERE ShopName = '" + shop.name() + "' AND Year = '" + year + "' AND Month = '" + month + "';";
@@ -274,6 +272,7 @@ public class ServerUserManager extends BaseSQL implements UserManager {
 				incomeReport.income = rs.getString("Income");
 				incomeReport.bestSellingProduct = rs.getString("BestSellingProduct");
 				incomeReport.totalNumberOfOrders = rs.getString("TotalNumberOfOrders");
+				
 				
 		
 			
@@ -293,14 +292,15 @@ public class ServerUserManager extends BaseSQL implements UserManager {
 					
 					while (rs.next()) {
 						IncomeReport incomeReportM = new IncomeReport();
-						incomeReportM.shop = shop;
+						incomeReportM.shop = s;
 						incomeReportM.year = year;
 						incomeReportM.month = month;
 						incomeReportM.income = rs.getString("Income");
 						incomeReportM.bestSellingProduct = rs.getString("BestSellingProduct");
 						incomeReportM.totalNumberOfOrders = rs.getString("TotalNumberOfOrders");
 						
-						allShopIncomeReportList.add(incomeReportM);
+						incomeReportList.Reports.add(incomeReportM);
+					
 						
 						
 						
