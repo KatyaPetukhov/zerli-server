@@ -82,19 +82,15 @@ public class ServerProductManager extends BaseSQL implements ProductManager {
 	}
 
 	@Override
-	public ProductList getProducts(String category, int start, int amount) {
+	public ProductList getProducts(String category) {
 		ProductList productList = new ProductList();
-		productList.start = start;
-		productList.amount = amount;
 		productList.category = category;
 		productList.items = new ArrayList<Product>();
 
 
-		String query = "SELECT * FROM " + TABLE_NAME + " WHERE " + CATEGORY + "=" + "'" +category+ "'" + " LIMIT "
-				+ start + "," + amount + ";";
+		String query = "SELECT * FROM " + TABLE_NAME + " WHERE " + CATEGORY + "=" + "'" +category+ "'"  + ";";
 		if(category.equals("All")) {
-			query = "SELECT * FROM " + TABLE_NAME + " LIMIT "
-					+ start + "," + amount + ";";
+			query = "SELECT * FROM " + TABLE_NAME + ";";
 		}
 		try {
 			ResultSet rs = runQuery(connection, query);

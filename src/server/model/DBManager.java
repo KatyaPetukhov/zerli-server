@@ -5,6 +5,8 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 
 import common.Role;
+import common.interfaces.CartManager;
+import common.interfaces.OrderManager;
 import common.interfaces.ProductManager;
 import common.interfaces.UserManager;
 import common.request_data.User;
@@ -130,4 +132,25 @@ public class DBManager {
 		}
 		return null;
 	}
+	
+	public OrderManager getOrderManager(User requestedBy) {
+		try {
+			return new ServerOrderManager(requestedBy, getConnection());
+		} catch (InstantiationException | IllegalAccessException | ClassNotFoundException | SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
+	public CartManager getCartManager(User requestedBy) {
+		try {
+			return new ServerCartManager(requestedBy, getConnection());
+		} catch (InstantiationException | IllegalAccessException | ClassNotFoundException | SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
 }

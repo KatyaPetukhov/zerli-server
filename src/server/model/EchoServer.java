@@ -1,13 +1,16 @@
 package server.model;
 
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.ArrayList;
 
 import common.Request;
 import common.RequestType;
+import common.interfaces.CartManager;
 import common.interfaces.UserManager.PermissionDenied;
 import common.interfaces.UserManager.WeakPassword;
 import common.request_data.CategoriesList;
+import common.request_data.Order;
 import common.request_data.Product;
 import common.request_data.ProductList;
 import common.request_data.ServerError;
@@ -98,6 +101,14 @@ public class EchoServer extends AbstractServer {
 			break;
 		case GET_PRODUCT:
 			request = handleGetProduct(request);
+			break;
+		case ADD_ORDER:
+			try {
+				request = handleAddOrder(request);
+			} catch (InstantiationException | IllegalAccessException | ClassNotFoundException | SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 			break;
 		/* TODO: Missing ADD_PRODUCT, REMOVE_PRODUCT */
 		default:
@@ -191,8 +202,7 @@ public class EchoServer extends AbstractServer {
 		 * requestType.GET_PRODUCTS
 		 */
 		ProductList productList = ProductList.fromJson(request.data);
-		productList = manager.getProductManager(request.user).getProducts(productList.category, productList.start,
-				productList.amount);
+		productList = manager.getProductManager(request.user).getProducts(productList.category);
 		request.data = productList.toJson();
 		return request;
 	}
@@ -204,12 +214,27 @@ public class EchoServer extends AbstractServer {
 	
 		Product product = Product.fromJson(request.data);
 		product = manager.getProductManager(request.user).getProduct(product.name);
-		request.data = product.toJson();
 		if (product == null) {
 			System.out.println("Incorrect request.");
 			request.data = null;
 		} else {
 			request.data = product.toJson();
+		}
+		
+		return request;
+	}
+	
+	private Request handleAddOrder(Request request) throws InstantiationException, IllegalAccessException, ClassNotFoundException, SQLException {
+		CartManager cartManager;
+		cartManager = new ServerCartManager(request.user, manager.getConnection());
+		Order order = Order.fromJson(request.data);
+		order = cartManager.submitOrder(order);
+		
+		if (order == null) {
+			System.out.println("Incorrect request.");
+			request.data = null;
+		} else {
+			request.data = order.toJson();
 		}
 		
 		return request;

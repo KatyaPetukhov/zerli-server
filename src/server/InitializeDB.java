@@ -10,6 +10,7 @@ import common.request_data.ImageFile;
 import common.request_data.Product;
 import common.request_data.User;
 import server.model.DBManager;
+import server.model.ServerOrderManager;
 import server.model.ServerProductManager;
 import server.model.ServerUserManager;
 
@@ -27,6 +28,7 @@ public class InitializeDB {
 		}
 		addUsers(connection);
 		addProducts(connection);
+		addOrderTable(connection);
 	}
 
 	private void createDatabase(DBManager model) {
@@ -61,37 +63,44 @@ public class InitializeDB {
 		productManager.addProduct(new Product("Field Beauty", 40.0, 0, "Bouquet",
 				ImageFile.asEncodedString("./src/server/gallery/b1.jpg")));
 	
-//		productManager.addProduct(new Product("Warm White", 60.0, 0, "Bouquet",
-//				ImageFile.asEncodedString("./src/server/gallery/b2.jpg")));
-//		
-//		productManager.addProduct(new Product("Pink Spring", 55.0, 0, "Bouquet",
-//				ImageFile.asEncodedString("./src/server/gallery/b3.jpg")));
-//		
-//		productManager.addProduct(
-//				new Product("Cute Ball", 70.0, 0, "Bouquet", ImageFile.asEncodedString("./src/server/gallery/b4.jpg")));
-//		
-//		productManager.addProduct(new Product("High Ground", 85.0, 0, "Bouquet",
-//				ImageFile.asEncodedString("./src/server/gallery/b5.jpg")));
-//		
-//		productManager.addProduct(
-//				new Product("With Love", 65.0, 0, "Bouquet", ImageFile.asEncodedString("./src/server/gallery/b6.jpg")));
-//		
-//		productManager.addProduct(new Product("Happy moments", 200.0, 0, "Wedding",
-//				ImageFile.asEncodedString("./src/server/gallery/w1.jpg")));
-//		
-//		productManager.addProduct(
-//				new Product("Memories", 150.0, 0, "Funeral", ImageFile.asEncodedString("./src/server/gallery/f1.jpg")));
-//		
-//		productManager.addProduct(new Product("Pink Orchid", 120.0, 0, "Flowerpot",
-//				ImageFile.asEncodedString("./src/server/gallery/p1.jpg")));
-//		
-//		productManager.addProduct(new Product("1m White Rose", 25.0, 0, "Retail",
-//				ImageFile.asEncodedString("./src/server/gallery/r1.jpg")));
-//		
-//		productManager.addProduct(new Product("0.6m Red Rose", 10.0, 0, "Retail",
-//				ImageFile.asEncodedString("./src/server/gallery/r2.jpg")));
+		productManager.addProduct(new Product("Warm White", 60.0, 0, "Bouquet",
+				ImageFile.asEncodedString("./src/server/gallery/b2.jpg")));
+		
+		productManager.addProduct(new Product("Pink Spring", 55.0, 0, "Bouquet",
+				ImageFile.asEncodedString("./src/server/gallery/b3.jpg")));
+		
+		productManager.addProduct(
+				new Product("Cute Ball", 70.0, 0, "Bouquet", ImageFile.asEncodedString("./src/server/gallery/b4.jpg")));
+		
+		productManager.addProduct(new Product("High Ground", 85.0, 0, "Bouquet",
+				ImageFile.asEncodedString("./src/server/gallery/b5.jpg")));
+		
+		productManager.addProduct(
+				new Product("With Love", 65.0, 0, "Bouquet", ImageFile.asEncodedString("./src/server/gallery/b6.jpg")));
+		
+		productManager.addProduct(new Product("Happy moments", 200.0, 0, "Wedding",
+				ImageFile.asEncodedString("./src/server/gallery/w1.jpg")));
+		
+		productManager.addProduct(
+				new Product("Memories", 150.0, 0, "Funeral", ImageFile.asEncodedString("./src/server/gallery/f1.jpg")));
+		
+		productManager.addProduct(new Product("Pink Orchid", 120.0, 0, "Flowerpot",
+				ImageFile.asEncodedString("./src/server/gallery/p1.jpg")));
+		
+		productManager.addProduct(new Product("1m White Rose", 25.0, 0, "Retail",
+				ImageFile.asEncodedString("./src/server/gallery/r1.jpg")));
+		
+		productManager.addProduct(new Product("0.6m Red Rose", 10.0, 0, "Retail",
+				ImageFile.asEncodedString("./src/server/gallery/r2.jpg")));
 
 		
 
 	}
+	
+	private void addOrderTable(Connection connection) {
+
+		ServerOrderManager.resetProducts(connection);
+	
+	}
+	
 }
