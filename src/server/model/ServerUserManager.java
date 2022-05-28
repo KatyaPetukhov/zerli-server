@@ -7,11 +7,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 import common.Role;
-import common.Shop;
+
 import common.interfaces.UserManager;
 import common.request_data.IncomeReport;
 import common.request_data.IncomeReportList;
+import common.request_data.Shop;
 import common.request_data.User;
+import common.request_data.UsersList;
 
 public class ServerUserManager extends BaseSQL implements UserManager {
 	/*
@@ -209,13 +211,11 @@ public class ServerUserManager extends BaseSQL implements UserManager {
 	}
 
 	@Override
-	public List<User> getUsers(boolean approved, int start, int amount) throws PermissionDenied {
-		if (!isManager) {
-			throw new PermissionDenied();
-		}
-		String query = "SELECT * FROM " + TABLE_NAME + " WHERE " + APPROVED + "=" + (approved ? 1 : 0) + " LIMIT "
-				+ start + "," + amount + ";";
-		List<User> users = new ArrayList<User>();
+	public UsersList getUsers() {
+	
+		String query = "SELECT * FROM " + TABLE_NAME + ";";
+		UsersList usersList= new UsersList();
+		usersList.Users = new ArrayList<User>();
 
 		try {
 			ResultSet rs = runQuery(connection, query);
@@ -227,12 +227,12 @@ public class ServerUserManager extends BaseSQL implements UserManager {
 				user.shopname = Shop.valueOf(rs.getString(SHOP_NAME));
 				user.approved = (rs.getInt(APPROVED) != 0 ? true : false);
 				user.userrole = Role.valueOf(rs.getString(USERROLE));
-				users.add(user);
+				usersList.Users.add(user);
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
-		return users;
+		return usersList;
 	}
 	
 	@Override
@@ -313,6 +313,23 @@ public class ServerUserManager extends BaseSQL implements UserManager {
 		}
 		
 		return incomeReport;
+	}
+
+	@Override
+	public boolean changeStatus(User user) {
+		String query;
+		if(user.approved)
+			query = "UPDATE users SET approved = '0' WHERE username = '"+user.username+"';";
+		else
+			query = "UPDATE users SET approved = '1' WHERE username = '"+user.username+"';";
+		try {
+			runUpdate(connection, query);
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return false;
+		}
+		return true;
+		
 	}
 
 	

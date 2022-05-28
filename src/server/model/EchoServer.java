@@ -6,14 +6,17 @@ import java.util.ArrayList;
 
 import common.Request;
 import common.RequestType;
+import common.interfaces.CartManager;
 import common.interfaces.UserManager.PermissionDenied;
 import common.interfaces.UserManager.WeakPassword;
 import common.request_data.CategoriesList;
+import common.request_data.Order;
 import common.request_data.IncomeReport;
 import common.request_data.IncomeReportList;
 import common.request_data.ProductList;
 import common.request_data.ServerError;
 import common.request_data.User;
+import common.request_data.UsersList;
 import ocsf.server.AbstractServer;
 import ocsf.server.ConnectionToClient;
 
@@ -84,6 +87,9 @@ public class EchoServer extends AbstractServer {
 		case GET_USER:
 			request = handleGetUser(request);
 			break;
+		case GET_USERS:
+			request = handleGetUsers(request);
+			break;
 		case ADD_USER:
 			request = handleAddUser(request);
 			break;
@@ -114,7 +120,19 @@ public class EchoServer extends AbstractServer {
 				e.printStackTrace();
 			}
 			break;
-		/* TODO: Missing ADD_PRODUCT, REMOVE_PRODUCT */
+		case ADD_ORDER:
+			try {
+				request = handleAddOrder(request);
+			} catch (InstantiationException | IllegalAccessException | ClassNotFoundException | SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			break;
+			
+		case CHANGE_STATUS:
+			request = handleChangeStatus(request);
+			break;
+	
 		default:
 			request.requestType = RequestType.REQUEST_FAILED;
 			request.data = new ServerError("Unsupporter reuqest.").toJson();
@@ -122,6 +140,20 @@ public class EchoServer extends AbstractServer {
 		}
 
 		respond(client, request);
+	}
+
+	private Request handleChangeStatus(Request request) {
+		User user = User.fromJson(request.data);
+		if(manager.changeStatus(user))
+			return request;
+		request.requestType = RequestType.REQUEST_FAILED;
+		return request;
+	}
+
+	private Request handleGetUsers(Request request) {
+		UsersList tmp = manager.getUsers();
+		request.data = tmp.toJson();
+		return request;
 	}
 
 	private Request handleGetIncomeReportsBC(Request request) throws SQLException {
@@ -237,9 +269,24 @@ public class EchoServer extends AbstractServer {
 		 * requestType.GET_PRODUCTS
 		 */
 		ProductList productList = ProductList.fromJson(request.data);
-		productList = manager.getProductManager(request.user).getProducts(productList.category, productList.start,
-				productList.amount);
+		productList = manager.getProductManager(request.user).getProducts(productList.category);
 		request.data = productList.toJson();
+		return request;
+	}
+	
+	private Request handleAddOrder(Request request) throws InstantiationException, IllegalAccessException, ClassNotFoundException, SQLException {
+		CartManager cartManager;
+		cartManager = new ServerCartManager(request.user, manager.getConnection());
+		Order order = Order.fromJson(request.data);
+		order = cartManager.submitOrder(order);
+
+		if (order == null) {
+			System.out.println("Incorrect request.");
+			request.data = null;
+		} else {
+			request.data = order.toJson();
+		}
+
 		return request;
 	}
 }

@@ -4,13 +4,17 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
+import common.interfaces.CartManager;
+import common.interfaces.OrderManager;
 import common.Role;
-import common.Shop;
+
 import common.interfaces.ProductManager;
 import common.interfaces.UserManager;
 import common.request_data.IncomeReport;
 import common.request_data.IncomeReportList;
+import common.request_data.Shop;
 import common.request_data.User;
+import common.request_data.UsersList;
 
 public class DBManager {
 	/*
@@ -142,5 +146,34 @@ public class DBManager {
 	public IncomeReportList getIncomeReportBC() {
 		
 		return getUserManager(null).getAllIncomeReports();
+	}
+	
+	public OrderManager getOrderManager(User requestedBy) {
+		try {
+			return new ServerOrderManager(requestedBy, getConnection());
+		} catch (InstantiationException | IllegalAccessException | ClassNotFoundException | SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;
+	}
+
+	public CartManager getCartManager(User requestedBy) {
+		try {
+			return new ServerCartManager(requestedBy, getConnection());
+		} catch (InstantiationException | IllegalAccessException | ClassNotFoundException | SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
+	public UsersList getUsers() {
+		return getUserManager(null).getUsers();
+		
+	}
+	
+	public boolean changeStatus(User user) {
+		return getUserManager(null).changeStatus(user);
 	}
 }

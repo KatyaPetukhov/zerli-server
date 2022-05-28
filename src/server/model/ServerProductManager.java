@@ -1,6 +1,7 @@
 package server.model;
 
 import java.sql.Connection;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -10,6 +11,9 @@ import java.util.Map;
 
 import common.Role;
 import common.interfaces.ProductManager;
+import common.interfaces.UserManager.PermissionDenied;
+import common.interfaces.UserManager.WeakPassword;
+import common.request_data.ImageFile;
 import common.request_data.Product;
 import common.request_data.ProductList;
 import common.request_data.User;
@@ -17,15 +21,26 @@ import common.request_data.User;
 public class ServerProductManager extends BaseSQL implements ProductManager {
 	/* SQL SCHEMA: */
 	private static String TABLE_NAME = "products";
+	private static String PRODUCT_NAME ="name";
+	private static String CATEGORY = "category";
+	private static String PRICE = "price";
+	private static String DISCOUNT ="discount";
+	private static String IMAGE = "image";
 	/* TODO: Define fields */
 
 	private static String VARCHAR = " varchar(255)";
+	private static String MEDIUMTEXT = " MEDIUMTEXT";
+	private static String SMALLINT = " smallint";
+	private static String  DOUBLE = " double";
+	
+	
 	/* End SQL SCHEMA */
 
 	private User requestedBy;
 	private Connection connection;
 
 	private static Map<String, List<Product>> productsMock = null;
+	private static Product product = null;
 
 	private static String[] categories = { ALL_CATEGORY, "Bouquet", "Wedding", "Funeral", "Flowerpot", "Retail" };
 
@@ -42,6 +57,7 @@ public class ServerProductManager extends BaseSQL implements ProductManager {
 		}
 	}
 
+
 	public static void resetProducts(Connection connection) {
 		String query = "DROP TABLE IF EXISTS " + TABLE_NAME + ";";
 		try {
@@ -49,6 +65,14 @@ public class ServerProductManager extends BaseSQL implements ProductManager {
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
+		query = "CREATE TABLE " + TABLE_NAME + " (" + PRODUCT_NAME + VARCHAR + ", " + CATEGORY + VARCHAR + ", " + PRICE
+				+ DOUBLE + ", " + DISCOUNT + SMALLINT + ", " + IMAGE + MEDIUMTEXT + ", PRIMARY KEY (" + PRODUCT_NAME
+				+ "));";
+		try {
+		runUpdate(connection, query);
+	} catch (SQLException e) {
+		e.printStackTrace();
+	}
 		// TODO: Create table with schema - same as UserManager
 	}
 
@@ -58,39 +82,91 @@ public class ServerProductManager extends BaseSQL implements ProductManager {
 	}
 
 	@Override
-	public ProductList getProducts(String category, int start, int amount) {
-		List<Product> products = new ArrayList<Product>();
-
+	public ProductList getProducts(String category) {
 		ProductList productList = new ProductList();
-		productList.start = start;
-		productList.amount = 0;
 		productList.category = category;
 		productList.items = new ArrayList<Product>();
 
-		if (productsMock.containsKey(category)) {
-			products = productsMock.get(category);
-			for (int i = start; i < products.size(); i++) {
-				productList.amount++;
-				productList.items.add(products.get(i));
-				if (productList.amount >= amount) {
-					break;
-				}
-			}
+
+		String query = "SELECT * FROM " + TABLE_NAME + " WHERE " + CATEGORY + "=" + "'" +category+ "'"  + ";";
+		if(category.equals("All")) {
+			query = "SELECT * FROM " + TABLE_NAME + ";";
 		}
+		try {
+			ResultSet rs = runQuery(connection, query);
+			while (rs.next()) {
+				Product product = new Product();
+				product.name = rs.getString(PRODUCT_NAME);
+				
+				product.category = rs.getString(CATEGORY);
+				//System.out.println("YOU ASKED FOR " + rs.getString(CATEGORY));
+				product.price = rs.getDouble(PRICE);
+				product.discount = rs.getInt(DISCOUNT);
+				product.imageString = rs.getString(IMAGE);
+				productList.items.add(product);
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		
 		return productList;
 	}
-
-	@Override
-	public void addProduct(Product product) {
-		if (requestedBy.userrole != Role.SUPPORT) {
-			/* TODO - raise an error. */
-			return;
+		
+//		if (productsMock.containsKey(category)) {
+//		products = productsMock.get(category);
+//		for (int i = start; i < products.size(); i++) {
+//			productList.amount++;
+//			productList.items.add(products.get(i));
+//			if (productList.amount >= amount) {
+//				break;
+//			}
+//		}
+//	}
+	
+	public Product getProduct(String name) {
+	
+		String query = "SELECT * FROM " + TABLE_NAME + " WHERE " + PRODUCT_NAME + "='" + name + "';";
+		try {
+			ResultSet rs = runQuery(connection, query);
+			/* name is a key, so there can be 0 or 1 objects only. */
+			while (rs.next()) {
+				Product product = new Product();
+				product.name = rs.getString(PRODUCT_NAME);
+				System.out.println("NAME IS " + product.name);
+				product.category = rs.getString(CATEGORY);
+				System.out.println("CATEGORY IS " + product.category);
+				product.price = rs.getDouble(PRICE);
+				product.discount = rs.getInt(DISCOUNT);
+				product.imageString = rs.getString(IMAGE);
+				
+				return product;
+			}
+			
+		} catch (SQLException e) {
+			e.printStackTrace();
 		}
-		productsMock.get(product.category).add(product);
-		if (!product.category.equals(ALL_CATEGORY)) {
-			productsMock.get(ALL_CATEGORY).add(product);
-		}
+		return null;		
 	}
+	
+	
+	@Override
+	public boolean addProduct(Product product) throws PermissionDenied {		
+		if (requestedBy.userrole != Role.SUPPORT) {
+			throw new PermissionDenied();	
+		}
+		try {
+			String query = "INSERT INTO " + TABLE_NAME + " VALUES (" + "'" + product.name + "', " + "'" + product.category + "', " + "'"
+					+ product.price + "', " + "'" + product.discount + "', "+ "'" + product.imageString +"'"+ ");";
+			System.out.println("QUERY TO SQL : " + query);
+			runUpdate(connection, query);
+			
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return false;
+		}
+		return true;
+	}
+
 
 	@Override
 	public void removeProduct(Product product) {

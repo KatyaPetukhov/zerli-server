@@ -5,9 +5,10 @@ import java.sql.SQLException;
 import java.util.List;
 
 import common.Role;
-import common.Shop;
+
 import common.interfaces.UserManager.PermissionDenied;
 import common.interfaces.UserManager.WeakPassword;
+import common.request_data.Shop;
 import common.request_data.User;
 import server.model.DBManager;
 import server.model.ServerUserManager;
@@ -32,10 +33,10 @@ public class TestBDManager {
 			userManager.addNewUser("m", "m", "Niv",Shop.HAIFA, Role.MANAGER, true);
 			userManager.addNewUser("w", "w", "Who",Shop.HAIFA, Role.WORKER, true);
 			userManager.addNewUser("s", "s", "Aaron",Shop.ALL, Role.SUPPORT, true);
-			approved = userManager.getUsers(true, 0, 10);
-			notApproved = userManager.getUsers(false, 0, 10);
-			userManager.approveUser("s");
-			notApprovedEmpty = userManager.getUsers(false, 0, 10);
+//			approved = userManager.getUsers(true, 0, 10);
+//			notApproved = userManager.getUsers(false, 0, 10);
+//			userManager.approveUser("s");
+//			notApprovedEmpty = userManager.getUsers(false, 0, 10);
 			userManager.removeUser("s");
 			userEmpty = userManager.getUser("s", "s");
 			userManager.addNewUser("s", "s", "Aaron",Shop.ALL, Role.SUPPORT, true);
