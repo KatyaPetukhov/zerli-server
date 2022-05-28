@@ -87,7 +87,8 @@ public class ServerUserManager extends BaseSQL implements UserManager {
 		}
 		query = "CREATE TABLE " + "complaints" + " (" + USERNAME + VARCHAR + ", " + "orderId" + VARCHAR + ", "
 				+ "complaint" + VARCHAR + ", " + "date" + VARCHAR + ", " + "price" + VARCHAR + ", " + "complaintStatus"
-				+ VARCHAR + ", " + "supportName" + VARCHAR + ", PRIMARY KEY (" + "orderId" + "));";
+				+ VARCHAR + ", " + "supportName" + VARCHAR + ", " + "refund" + VARCHAR + ", PRIMARY KEY (" + "orderId"
+				+ "));";
 		try {
 			runUpdate(connection, query);
 		} catch (SQLException e) {
@@ -276,10 +277,10 @@ public class ServerUserManager extends BaseSQL implements UserManager {
 
 	@Override
 	public boolean addNewCompliant(String userName, String orderId, String complaint, String date, String price,
-			String complaintStatus, String supportName) {
+			String complaintStatus, String supportName, String refund) {
 		String query = "INSERT INTO " + "complaints" + " VALUES (" + "'" + userName + "', " + "'" + orderId + "', "
 				+ "'" + complaint + "', " + "'" + date + "', " + "'" + price + "', '" + complaintStatus + "', '"
-				+ supportName + "');";
+				+ supportName + "', " + "'" + refund + "');";
 		try {
 			runUpdate(connection, query);
 		} catch (SQLException e) {
@@ -292,6 +293,7 @@ public class ServerUserManager extends BaseSQL implements UserManager {
 	@Override
 	public ComplaintList getAllComplaints(String supportName) {
 		ComplaintList complaintList = new ComplaintList();
+		complaintList.complaints = new ArrayList<Complaint>();
 		String query = "SELECT * FROM complaints WHERE supportName = '" + supportName + "';";
 		try {
 			ResultSet rs = runQuery(connection, query);
@@ -303,12 +305,46 @@ public class ServerUserManager extends BaseSQL implements UserManager {
 				complaint.date = rs.getString("date");
 				complaint.price = rs.getString("price");
 				complaint.complaintStatus = rs.getString("complaintStatus");
+				// complaint.complaintStatus = rs.getString("refund");
 				complaintList.complaints.add(complaint);
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
 		return complaintList;
+	}
+
+	@Override
+	public boolean setRefundAmount(String orderId, String refund) {
+		if (checkIfOrderExist(orderId)) {
+			String query = "UPDATE " + "complaints" + " SET " + "refund" + "='" + refund + "' WHERE " + "orderId" + "='"
+					+ orderId + "';";
+			try {
+				runUpdate(connection, query);
+			} catch (SQLException e) {
+				e.printStackTrace();
+				return false;
+			}
+			return true;
+		}
+		return false;
+	}
+
+	public boolean checkIfOrderExist(String orderId) {
+		String query = "SELECT IF( EXISTS(\r\n" + "SELECT orderId\r\n" + " FROM complaints\r\n" + "WHERE orderId = '"
+				+ orderId + "'), 1, 0)";
+		try {
+			
+//			int rs = runUpdate(connection, query);
+//			System.out.println("rs primnt : " + rs);
+//			if (rs == 1)
+//				return true;
+			
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return false;
+		}
+		return false;
 	}
 
 //	@Override

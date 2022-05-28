@@ -111,7 +111,7 @@ public class DBManager {
 	}
 
 	public ComplaintList getAllComplaints(User user) {
-		return getUserManager().getAllComplaints(user.nickname);
+		return getUserManager(null).getAllComplaints(user.nickname);
 	}
 
 	public boolean isConnected() {

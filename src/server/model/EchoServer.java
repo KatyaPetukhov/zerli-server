@@ -12,6 +12,7 @@ import common.request_data.CategoriesList;
 import common.request_data.ComplaintList;
 //import common.request_data.IncomeReport;
 import common.request_data.ProductList;
+import common.request_data.Refund;
 import common.request_data.ServerError;
 import common.request_data.User;
 import ocsf.server.AbstractServer;
@@ -115,6 +116,23 @@ public class EchoServer extends AbstractServer {
 				e.printStackTrace();
 			}
 			break;
+		case GET_REFUND_AMOUNT:
+			try {
+				request = handleGetRefund(request);
+			} catch (InstantiationException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IllegalAccessException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (ClassNotFoundException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			break;
 //		case GET_INCOME_REPORT:
 //			try {
 //				request = handleGetIncomeReports(request);
@@ -174,9 +192,19 @@ public class EchoServer extends AbstractServer {
 			throws InstantiationException, IllegalAccessException, ClassNotFoundException, SQLException {
 		ComplaintList complaintList = ComplaintList.fromJson(request.data);
 		ServerUserManager serverUserManager = new ServerUserManager(request.user, manager.getConnection());
-		ComplaintList listAllComplaints = serverUserManager.getAllComplaints(request.user.nickname);
-		request.data = listAllComplaints.toJson();
-		System.out.println("request from server : " + request.data);
+		complaintList = serverUserManager.getAllComplaints(request.user.nickname);
+		request.data = complaintList.toJson();
+		return request;
+	}
+
+	private Request handleGetRefund(Request request)
+			throws InstantiationException, IllegalAccessException, ClassNotFoundException, SQLException {
+		Refund refundRequest = Refund.fromJson(request.data);
+		ServerUserManager serverUserManager = new ServerUserManager(request.user, manager.getConnection());
+		if (serverUserManager.setRefundAmount(refundRequest.orderId, refundRequest.refund))
+			request.data = null;
+		else
+			request.requestType = RequestType.REQUEST_FAILED;
 		return request;
 	}
 

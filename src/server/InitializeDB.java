@@ -71,12 +71,15 @@ public class InitializeDB {
 		try {
 			ServerUserManager.resetComplaints(connection);
 			ServerUserManager userManager = new ServerUserManager(worker, connection);
-						
-			userManager.addNewCompliant("Jess", "123", "ugly flower", "1.1.2", "100", "approved","Aaron");
-		}
-		catch (Exception e) {
+
+			userManager.addNewCompliant("sss", "123", "abjkdf", "1.1.2", "100", "Awaiting response", "Aaron" , "");
+//			userManager.addNewCompliant( "345", "ugly flowerugly", "a", "c", "d",
+//			 "Aaron");
+//			userManager.addNewCompliant( "12555", "ugly flowerugly", "a", "c", "fefsg", "Aaron");
+
+		} catch (Exception e) {
 			e.printStackTrace();
-			
+
 		}
 	}
 
