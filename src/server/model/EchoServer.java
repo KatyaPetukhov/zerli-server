@@ -6,10 +6,13 @@ import java.util.ArrayList;
 
 import common.Request;
 import common.RequestType;
+import common.interfaces.OrderManager;
 import common.interfaces.UserManager.PermissionDenied;
 import common.interfaces.UserManager.WeakPassword;
 import common.request_data.CategoriesList;
 import common.request_data.ComplaintList;
+import common.request_data.Order;
+import common.request_data.OrderList;
 //import common.request_data.IncomeReport;
 import common.request_data.ProductList;
 import common.request_data.Refund;
@@ -103,16 +106,12 @@ public class EchoServer extends AbstractServer {
 			try {
 				request = handleGetComplaints(request);
 			} catch (InstantiationException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			} catch (IllegalAccessException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			} catch (ClassNotFoundException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			} catch (SQLException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 			break;
@@ -120,36 +119,36 @@ public class EchoServer extends AbstractServer {
 			try {
 				request = handleGetRefund(request);
 			} catch (InstantiationException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			} catch (IllegalAccessException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			} catch (ClassNotFoundException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+			break;
+		case GET_USER_OREDERS:
+			try {
+				request = handleGetUserOrder(request);
+			} catch (InstantiationException e) {
+				e.printStackTrace();
+			} catch (IllegalAccessException e) {
+				e.printStackTrace();
+			} catch (ClassNotFoundException e) {
+				e.printStackTrace();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+			break;
+		case ADD_ORDER:
+			try {
+				request = handleAddOrder(request);
+			} catch (InstantiationException | IllegalAccessException | ClassNotFoundException | SQLException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 			break;
-//		case GET_INCOME_REPORT:
-//			try {
-//				request = handleGetIncomeReports(request);
-//			} catch (SQLException e) {
-//				// TODO Auto-generated catch block
-//				e.printStackTrace();
-//			}
-//			break;
-//		case GET_INCOME_REPORT_BC:
-//			try {
-//				request = handleGetIncomeReportsBC(request);
-//			} catch (SQLException e) {
-//				// TODO Auto-generated catch block
-//				e.printStackTrace();
-//			}
-//			break;
-		/* TODO: Missing ADD_PRODUCT, REMOVE_PRODUCT */
 		default:
 			request.requestType = RequestType.REQUEST_FAILED;
 			request.data = new ServerError("Unsupporter reuqest.").toJson();
@@ -194,6 +193,15 @@ public class EchoServer extends AbstractServer {
 		ServerUserManager serverUserManager = new ServerUserManager(request.user, manager.getConnection());
 		complaintList = serverUserManager.getAllComplaints(request.user.nickname);
 		request.data = complaintList.toJson();
+		return request;
+	}
+
+	private Request handleGetUserOrder(Request request)
+			throws InstantiationException, IllegalAccessException, ClassNotFoundException, SQLException {
+		OrderList orderList = OrderList.fromJson(request.data);
+		ServerOrderManager serverOrderManager = new ServerOrderManager(request.user, manager.getConnection());
+		orderList = serverOrderManager.getOrders(orderList.username);
+		request.data = orderList.toJson();
 		return request;
 	}
 
@@ -242,7 +250,7 @@ public class EchoServer extends AbstractServer {
 		User toAdd = User.fromJson(request.data);
 		try {
 			if (!manager.getUserManager(request.user).addNewUser(toAdd.username, toAdd.password, toAdd.nickname,
-					toAdd.shopname, toAdd.userrole, toAdd.approved)) {
+					toAdd.userrole, toAdd.approved)) {
 				/* User already exists. */
 				request.requestType = RequestType.REQUEST_FAILED;
 			}
@@ -292,9 +300,27 @@ public class EchoServer extends AbstractServer {
 		 * requestType.GET_PRODUCTS
 		 */
 		ProductList productList = ProductList.fromJson(request.data);
-		productList = manager.getProductManager(request.user).getProducts(productList.category, productList.start,
-				productList.amount);
+		productList = manager.getProductManager(request.user).getProducts(productList.category);
 		request.data = productList.toJson();
 		return request;
 	}
+
+	// DELETE
+	private Request handleAddOrder(Request request)
+			throws InstantiationException, IllegalAccessException, ClassNotFoundException, SQLException {
+		ServerOrderManager cartManager;
+		cartManager = new ServerOrderManager(request.user, manager.getConnection());
+		Order order = Order.fromJson(request.data);
+		order = cartManager.submitOrder(order);
+
+		if (order == null) {
+			System.out.println("Incorrect request.");
+			request.data = null;
+		} else {
+			request.data = order.toJson();
+		}
+
+		return request;
+	}
+
 }

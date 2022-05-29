@@ -3,11 +3,13 @@ package server.model;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 
 import common.interfaces.OrderManager;
-import common.request_data.CartItem;
 import common.request_data.Order;
 import common.request_data.OrderList;
+import common.request_data.OrderStatus;
+import common.request_data.OrderType;
 import common.request_data.Product;
 import common.request_data.ProductList;
 import common.request_data.User;
@@ -51,7 +53,7 @@ public class ServerOrderManager extends BaseSQL implements OrderManager {
 
 	}
 
-	public static void resetProducts(Connection connection) {
+	public static void resetOrders(Connection connection) {
 		String query = "DROP TABLE IF EXISTS " + TABLE_NAME + ";";
 		try {
 			runUpdate(connection, query);
@@ -87,7 +89,7 @@ public class ServerOrderManager extends BaseSQL implements OrderManager {
 				OrderList orderList = new OrderList();
 				Order order = new Order();
 				order.totalPrice = rs.getDouble(PRICE);
-				order.status = rs.getString(STATUS);
+				order.status = OrderStatus.valueOf(rs.getString(STATUS));
 				order.signature = rs.getString(SIGNATURE);
 				// TODO order.shop=rs.getString(SHOP);
 				order.recipient = rs.getString(RECIPIENT);
@@ -97,7 +99,7 @@ public class ServerOrderManager extends BaseSQL implements OrderManager {
 
 				order.phone = rs.getString(DELIVERYPHONE);
 				order.paymentPhone = rs.getString(PAYMENTPHONE);
-				order.orderType = rs.getString(ORDERTYPE);
+				order.orderType = OrderType.valueOf(rs.getString(ORDERTYPE));
 				order.orderNumber = rs.getString(ORDER_NUMBER);
 				order.hour = rs.getString(HOUR);
 				order.date = rs.getString(DATE);
@@ -114,4 +116,63 @@ public class ServerOrderManager extends BaseSQL implements OrderManager {
 		return null;
 	}
 
+	@Override
+	public OrderList getAllOrders(String username) {
+		OrderList orderList = new OrderList();
+		orderList.orders = new ArrayList<Order>();
+		String query = "SELECT number FROM orders WHERE user = '" + username + "';";
+		try {
+			ResultSet rs = runQuery(connection, query);
+			while (rs.next()) { // for lines
+				Order order = new Order();
+				order.orderNumber = rs.getString("orderNumber");
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return orderList;
+	}
+	
+	private double checkTotalPrice( ProductList products) throws SQLException {
+		Double priceToCheck = 0.0;
+		for ( Product p: products.items) {
+			String query = "SELECT " + PRICE + " FROM " + "products" + " WHERE " + "name" + "='" + p.name + "';";
+			
+			ResultSet rs = runQuery(connection, query);
+			while(rs.next()) {
+			Double productPrice = rs.getDouble(PRICE);
+			priceToCheck+=productPrice;
+			}
+			
+		}
+		return priceToCheck;
+	}
+	
+	//DELETE THIS FUNCTION
+public Order submitOrder(Order order) {
+		
+		
+		try {
+			order.totalPrice=checkTotalPrice(order.products);
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		try {
+			String query = "INSERT INTO " + TABLE_NAME + " VALUES (" + "'" + order.orderNumber + "', " + "'" + order.username + "', " + "'"
+					+ order.date + "', " + "'" + order.hour + "', "+ "'" + order.products.toJson() +"', " + "'"
+					+ order.status + "', " + "'" + order.totalPrice + "', " + "'" + order.recipient +"', " + "'" + order.greetingMessage + "', " + "'"
+					+ order.signature + "', " + "'" + order.shop.toString() + "', " + "'" + order.address + "', " +"'" + order.city + "', " + "'" 
+					+ order.phone + "', " + "'" + order.paymentPhone + "', " +"'" + order.orderType + "'"
+					+ ");";
+			runUpdate(connection, query);
+			
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return null;
+		}		
+		return order;
+		
+	}
 }
