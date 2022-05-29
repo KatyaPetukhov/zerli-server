@@ -3,15 +3,14 @@ package server.model;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.ArrayList;
-import java.util.List;
 
 import common.Role;
 
 import common.interfaces.UserManager;
 import common.request_data.IncomeReport;
 import common.request_data.IncomeReportList;
+
 import common.request_data.Shop;
 import common.request_data.User;
 import common.request_data.UsersList;
@@ -30,6 +29,10 @@ public class ServerUserManager extends BaseSQL implements UserManager {
 	private static String USERROLE = "userrole"; // varchar
 	private static String SHOP_NAME = "ShopName";
 	private static String APPROVED = "approved"; // boolean
+	private static String CARD_NUMBER = "cardNumber"; 
+	private static String EXPIRATION_DATE = "expirationDate"; 
+	private static String CVV = "CVV"; 
+	private static String LOG_INFO = "logInfo"; // boolean
 
 	private static String VARCHAR = " varchar(255)";
 	private static String BOOLEAN = " boolean";
@@ -71,7 +74,9 @@ public class ServerUserManager extends BaseSQL implements UserManager {
 			e.printStackTrace();
 		}
 		query = "CREATE TABLE " + TABLE_NAME + " (" + USERNAME + VARCHAR + ", " + PASSWORD + VARCHAR + ", " + NICKNAME
-				+ VARCHAR + ", " + SHOP_NAME + VARCHAR + ", "+ USERROLE + VARCHAR + ", " + APPROVED + BOOLEAN + ", "+ "cardNumber" + VARCHAR + ", "+ "expirationDate" + VARCHAR + ", "+ "CVV" + VARCHAR + ", PRIMARY KEY (" + USERNAME
+				+ VARCHAR + ", " + SHOP_NAME + VARCHAR + ", "+ USERROLE + VARCHAR + ", " + APPROVED + BOOLEAN 
+				+ ", "+ CARD_NUMBER + VARCHAR + ", "+ EXPIRATION_DATE + VARCHAR + ", "
+				+ CVV + VARCHAR + ", " + LOG_INFO + BOOLEAN + ", PRIMARY KEY (" + USERNAME
 				+ "));";
 		try {
 			runUpdate(connection, query);
@@ -124,6 +129,7 @@ public class ServerUserManager extends BaseSQL implements UserManager {
 	@Override
 	public User getUser(String username, String password) {
 		String query = "SELECT * FROM " + TABLE_NAME + " WHERE " + USERNAME + "='" + username + "';";
+	
 		try {
 			ResultSet rs = runQuery(connection, query);
 			/* username is a key, so there can be 0 or 1 objects only. */
@@ -135,25 +141,42 @@ public class ServerUserManager extends BaseSQL implements UserManager {
 				user.shopname = Shop.valueOf(rs.getString(SHOP_NAME));
 				user.approved = (rs.getInt(APPROVED) != 0 ? true : false);
 				user.userrole = Role.valueOf(rs.getString(USERROLE));
-				if (!user.password.equals(password)) {
+				user.cardNumber = rs.getString(CARD_NUMBER);
+				user.exDate = rs.getString(EXPIRATION_DATE);
+				user.cvv = rs.getString(CVV);
+				user.logInfo = (rs.getInt(LOG_INFO) != 0 ? true : false);
+				if (!user.password.equals(password) || user.logInfo)  {
 					return null;
 				}
+				
 				return user;
+				
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
 		return null;
 	}
+	
+
+	private void logInUser(String username) {
+		String query = "UPDATE " + TABLE_NAME + " SET " + LOG_INFO + "=1 WHERE " + USERNAME + "='" + username + "';";
+		try {
+			runUpdate(connection, query);
+		} catch (SQLException e) {
+			
+			e.printStackTrace();
+		}
+	}
 
 	@Override
-	public boolean addNewUser(String username, String password, String nickname,Shop shopname, Role role, boolean approved,String cardNumber,String expirationDate,String cvv)
+	public boolean addNewUser(String username, String password, String nickname,Shop shopname, Role role, boolean approved,String cardNumber,String expirationDate,String cvv,boolean logInfo)
 			throws WeakPassword, PermissionDenied {
 		System.out.println(username+password+nickname+role.name()+(approved ? 1 : 0)+cardNumber+expirationDate+cvv);
 	
 		String query = "INSERT INTO " + TABLE_NAME + " VALUES (" + "'" + username + "', " + "'" + password + "', " + "'"
 				+ nickname + "', " + "'" + shopname.name() +  "', " + "'" + role.name() + "', " + (approved ? 1 : 0) 
-				+ ", " + "'" + cardNumber + "', " + "'" + expirationDate + "', " + "'" + cvv + "');";
+				+ ", " + "'" + cardNumber + "', " + "'" + expirationDate + "', " + "'" + cvv + "', " + "'" + (logInfo ? 1 : 0) + "');";
 		
 		try {
 			runUpdate(connection, query);
@@ -328,6 +351,34 @@ public class ServerUserManager extends BaseSQL implements UserManager {
 		return true;
 		
 	}
+
+	@Override
+	public boolean logInUser(User user) {
+		String query = "UPDATE " + TABLE_NAME + " SET " + LOG_INFO + "=1 WHERE " + USERNAME + "='" + user.username + "';";
+		try {
+			runUpdate(connection, query);
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return false;
+		}
+		return true;
+	}
+	
+	@Override
+	public boolean logOffUser(User user) {
+		String query = "UPDATE " + TABLE_NAME + " SET " + LOG_INFO + "=0 WHERE " + USERNAME + "='" + user.username + "';";
+		try {
+			runUpdate(connection, query);
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return false;
+		}
+		return true;
+	}
+
+
+
+	
 
 	
 }

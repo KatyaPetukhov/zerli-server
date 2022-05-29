@@ -53,6 +53,17 @@ public class EchoServer extends AbstractServer {
 			respond(client, request);
 			return;
 		}
+		if(request.requestType.equals(RequestType.LOG_OFF_USER)) {
+			request = handleLogOff(request);
+			respond(client, request);
+			return;
+		}
+		if(request.requestType.equals(RequestType.LOGIN)) {
+			request = handleLogIn(request);
+			respond(client, request);
+			return;
+		}
+	
 		request.user = manager.validateUser(request.user);
 		if (request.user == null) {
 			/*
@@ -74,6 +85,7 @@ public class EchoServer extends AbstractServer {
 			respond(client, request);
 			return;
 		}
+		
 		System.out.println("Request: " + request.requestType.name() + ", Role: " + request.user.userrole.name()
 				+ ", User: " + request.user.nickname);
 		switch (request.requestType) {
@@ -148,6 +160,27 @@ public class EchoServer extends AbstractServer {
 		respond(client, request);
 	}
 
+	private Request handleLogIn(Request request) {
+		System.out.println("Correct user requested.");
+		User toCheck = User.fromJson(request.data);
+		if (!manager.logInUser(toCheck)) {
+			System.out.println("Incorrect request.");
+			request.data = null;
+		} else {
+			request.data = toCheck.toJson();
+		}
+		return request;
+	}
+
+	private Request handleLogOff(Request request) {
+		User user = User.fromJson(request.data);
+
+		if(manager.logOffUser(user))
+			return request;
+		request.requestType = RequestType.REQUEST_FAILED;
+		return request;
+	}
+
 	private Request handleChangeStatus(Request request) {
 		User user = User.fromJson(request.data);
 		if(manager.changeStatus(user))
@@ -213,6 +246,7 @@ public class EchoServer extends AbstractServer {
 			System.out.println("Incorrect request.");
 			request.data = null;
 		} else {
+			handleLogIn(request);
 			request.data = toCheck.toJson();
 		}
 		return request;
@@ -227,7 +261,7 @@ public class EchoServer extends AbstractServer {
 
 		try {
 			if (!manager.getUserManager(request.user).addNewUser(toAdd.username, toAdd.password, toAdd.nickname,toAdd.shopname,
-					toAdd.userrole, toAdd.approved,toAdd.cardNumber,toAdd.exDate,toAdd.cvv)) {
+					toAdd.userrole, toAdd.approved,toAdd.cardNumber,toAdd.exDate,toAdd.cvv,toAdd.logInfo)) {
 				/* User already exists. */
 				request.requestType = RequestType.REQUEST_FAILED;
 			}

@@ -103,6 +103,7 @@ public class DBManager {
 	}
 
 	public User validateUser(User user) {
+		
 		/*
 		 * Return null if user is incorrect or does not match the password or role.
 		 * Returning null will result in "forbidden" response.
@@ -113,6 +114,7 @@ public class DBManager {
 		}
 		return getUserManager(null).getUser(user.username, user.password);
 	}
+		
 
 	public boolean isConnected() {
 		if (isConnected) {
@@ -176,4 +178,16 @@ public class DBManager {
 	public boolean changeStatus(User user) {
 		return getUserManager(null).changeStatus(user);
 	}
+
+	public boolean logOffUser(User user) {
+		// TODO Auto-generated method stub
+		return getUserManager(null).logOffUser(user);
+	}
+	
+	public boolean logInUser(User user) {
+		// TODO Auto-generated method stub
+		return getUserManager(null).logInUser(user);
+	}
+
+	
 }
