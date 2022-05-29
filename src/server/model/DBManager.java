@@ -6,6 +6,7 @@ import java.sql.SQLException;
 
 import common.Role;
 import common.Shop;
+import common.interfaces.OrderManager;
 import common.interfaces.ProductManager;
 import common.interfaces.UserManager;
 import common.request_data.ComplaintList;
@@ -132,6 +133,16 @@ public class DBManager {
 	public ProductManager getProductManager(User requestedBy) {
 		try {
 			return new ServerProductManager(requestedBy, getConnection());
+		} catch (InstantiationException | IllegalAccessException | ClassNotFoundException | SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;
+	}
+
+	public OrderManager getOrderManager(User requestedBy) {
+		try {
+			return new ServerOrderManager(requestedBy, getConnection());
 		} catch (InstantiationException | IllegalAccessException | ClassNotFoundException | SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

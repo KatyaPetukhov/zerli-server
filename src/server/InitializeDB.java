@@ -11,6 +11,7 @@ import common.request_data.ImageFile;
 import common.request_data.Product;
 import common.request_data.User;
 import server.model.DBManager;
+import server.model.ServerOrderManager;
 import server.model.ServerProductManager;
 import server.model.ServerUserManager;
 
@@ -29,6 +30,8 @@ public class InitializeDB {
 		addUsers(connection);
 		addProducts(connection);
 		addComplaints(connection);
+		addOrderTable(connection);
+
 		// addOrders(connection);
 		// addReports(connection);
 	}
@@ -71,16 +74,17 @@ public class InitializeDB {
 		try {
 			ServerUserManager.resetComplaints(connection);
 			ServerUserManager userManager = new ServerUserManager(worker, connection);
-
-			userManager.addNewCompliant("sss", "123", "abjkdf", "1.1.2", "100", "Awaiting response", "Aaron" , "");
-//			userManager.addNewCompliant( "345", "ugly flowerugly", "a", "c", "d",
-//			 "Aaron");
-//			userManager.addNewCompliant( "12555", "ugly flowerugly", "a", "c", "fefsg", "Aaron");
-
+			userManager.addNewCompliant("Jessica", "123", "ugly flowers", "08.06.22", "100", "Awaiting response",
+					"Aaron", "0");
+			userManager.addNewCompliant("Yarden", "234", "dry boquet", "30.05.22", "50", "Awaiting response", "Aaron",
+					"0");
 		} catch (Exception e) {
 			e.printStackTrace();
-
 		}
+	}
+
+	private void addOrderTable(Connection connection) {
+		ServerOrderManager.resetProducts(connection);
 	}
 
 	private void addUsers(Connection connection) {

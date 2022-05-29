@@ -305,7 +305,7 @@ public class ServerUserManager extends BaseSQL implements UserManager {
 				complaint.date = rs.getString("date");
 				complaint.price = rs.getString("price");
 				complaint.complaintStatus = rs.getString("complaintStatus");
-				// complaint.complaintStatus = rs.getString("refund");
+				complaint.refund = rs.getString("refund");
 				complaintList.complaints.add(complaint);
 			}
 		} catch (SQLException e) {
@@ -316,36 +316,27 @@ public class ServerUserManager extends BaseSQL implements UserManager {
 
 	@Override
 	public boolean setRefundAmount(String orderId, String refund) {
-		if (checkIfOrderExist(orderId)) {
-			String query = "UPDATE " + "complaints" + " SET " + "refund" + "='" + refund + "' WHERE " + "orderId" + "='"
-					+ orderId + "';";
-			try {
-				runUpdate(connection, query);
-			} catch (SQLException e) {
-				e.printStackTrace();
-				return false;
-			}
-			return true;
-		}
-		return false;
-	}
-
-	public boolean checkIfOrderExist(String orderId) {
-		String query = "SELECT IF( EXISTS(\r\n" + "SELECT orderId\r\n" + " FROM complaints\r\n" + "WHERE orderId = '"
-				+ orderId + "'), 1, 0)";
+		String query = "UPDATE complaints SET refund ='" + refund + "' , complaintStatus = 'Approved' WHERE orderId ='" + orderId + "';";
 		try {
-			
-//			int rs = runUpdate(connection, query);
-//			System.out.println("rs primnt : " + rs);
-//			if (rs == 1)
-//				return true;
-			
+			runUpdate(connection, query);
 		} catch (SQLException e) {
 			e.printStackTrace();
 			return false;
 		}
-		return false;
+		return true;
 	}
+
+	/*
+	 * public boolean checkIfOrderExist(String orderId) { String query =
+	 * "SELECT IF( EXISTS(\r\n" + "SELECT orderId\r\n" + " FROM complaints\r\n" +
+	 * "WHERE orderId = '" + orderId + "'), 1, 0)"; try {
+	 * 
+	 * // int rs = runUpdate(connection, query); //
+	 * System.out.println("rs primnt : " + rs); // if (rs == 1) // return true;
+	 * 
+	 * } catch (SQLException e) { e.printStackTrace(); return false; } return false;
+	 * }
+	 */
 
 //	@Override
 //	public IncomeReport getIncomeReport(Shop shop, String year, String month) throws SQLException {

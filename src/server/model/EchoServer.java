@@ -203,8 +203,10 @@ public class EchoServer extends AbstractServer {
 		ServerUserManager serverUserManager = new ServerUserManager(request.user, manager.getConnection());
 		if (serverUserManager.setRefundAmount(refundRequest.orderId, refundRequest.refund))
 			request.data = null;
-		else
+		else {
 			request.requestType = RequestType.REQUEST_FAILED;
+			request.data = new ServerError("Request failed in DB.").toJson();
+		}
 		return request;
 	}
 
