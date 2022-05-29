@@ -3,6 +3,7 @@ package server.model;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -70,7 +71,7 @@ public class ServerUserManager extends BaseSQL implements UserManager {
 			e.printStackTrace();
 		}
 		query = "CREATE TABLE " + TABLE_NAME + " (" + USERNAME + VARCHAR + ", " + PASSWORD + VARCHAR + ", " + NICKNAME
-				+ VARCHAR + ", " + SHOP_NAME + VARCHAR + ", "+ USERROLE + VARCHAR + ", " + APPROVED + BOOLEAN + ", PRIMARY KEY (" + USERNAME
+				+ VARCHAR + ", " + SHOP_NAME + VARCHAR + ", "+ USERROLE + VARCHAR + ", " + APPROVED + BOOLEAN + ", "+ "cardNumber" + VARCHAR + ", "+ "expirationDate" + VARCHAR + ", "+ "CVV" + VARCHAR + ", PRIMARY KEY (" + USERNAME
 				+ "));";
 		try {
 			runUpdate(connection, query);
@@ -146,14 +147,14 @@ public class ServerUserManager extends BaseSQL implements UserManager {
 	}
 
 	@Override
-	public boolean addNewUser(String username, String password, String nickname,Shop shopname, Role role, boolean approved)
+	public boolean addNewUser(String username, String password, String nickname,Shop shopname, Role role, boolean approved,String cardNumber,String expirationDate,String cvv)
 			throws WeakPassword, PermissionDenied {
-		if (!isManager && approved == true) {
-			throw new PermissionDenied();
-		}
-		checkPasswordStrength(password);
+		System.out.println(username+password+nickname+role.name()+(approved ? 1 : 0)+cardNumber+expirationDate+cvv);
+	
 		String query = "INSERT INTO " + TABLE_NAME + " VALUES (" + "'" + username + "', " + "'" + password + "', " + "'"
-				+ nickname + "', " + "'" + shopname.name() +  "', " + "'" + role.name() + "', " + (approved ? 1 : 0) + ");";
+				+ nickname + "', " + "'" + shopname.name() +  "', " + "'" + role.name() + "', " + (approved ? 1 : 0) 
+				+ ", " + "'" + cardNumber + "', " + "'" + expirationDate + "', " + "'" + cvv + "');";
+		
 		try {
 			runUpdate(connection, query);
 		} catch (SQLException e) {
@@ -248,11 +249,7 @@ public class ServerUserManager extends BaseSQL implements UserManager {
 		return true;
 	}
 
-	private static void checkPasswordStrength(String password) throws WeakPassword {
-		if (password == null || password.isEmpty()) {
-			throw new WeakPassword("Password cannot be empty.");
-		}
-	}
+
 
 	@Override
 	public IncomeReport getIncomeReport(Shop shop, String year, String month) throws SQLException {

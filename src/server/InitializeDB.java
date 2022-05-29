@@ -2,6 +2,7 @@ package server;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.sql.SQLIntegrityConstraintViolationException;
 
 import common.Role;
 
@@ -18,7 +19,7 @@ import server.model.ServerUserManager;
 
 public class InitializeDB {
 	/* Add a default set of data that is enough to play with the application. */
-	public void f(DBManager model) throws PermissionDenied {
+	public void f(DBManager model) throws PermissionDenied, SQLIntegrityConstraintViolationException {
 		createDatabase(model);
 
 		Connection connection = null;
@@ -68,18 +69,18 @@ public class InitializeDB {
 		}
 	}
 
-	private void addUsers(Connection connection) {
+	private void addUsers(Connection connection) throws SQLIntegrityConstraintViolationException {
 		User manager = new User();
 		manager.userrole = Role.MANAGER;
 		try {
 			ServerUserManager.resetUsers(connection);
 			ServerUserManager userManager = new ServerUserManager(manager, connection);
 
-			userManager.addNewUser("u", "u", "Katya",Shop.NONE, Role.CUSTOMER, false);
-			userManager.addNewUser("o", "o", "Jessika",Shop.ALL, Role.OWNER, true);
-			userManager.addNewUser("m", "m", "Niv",Shop.HAIFA, Role.MANAGER, true);
-			userManager.addNewUser("w", "w", "Who",Shop.HAIFA, Role.WORKER, true);
-			userManager.addNewUser("s", "s", "Aaron",Shop.ALL, Role.SUPPORT, true);
+			userManager.addNewUser("u", "u", "Katya",Shop.NONE, Role.CUSTOMER, false,"1111222233334444","18/7/2023","132");
+			userManager.addNewUser("o", "o", "Jessika",Shop.ALL, Role.OWNER, true,null,null,null);
+			userManager.addNewUser("m", "m", "Niv",Shop.HAIFA, Role.MANAGER, true,null,null,null);
+			userManager.addNewUser("w", "w", "Who",Shop.HAIFA, Role.WORKER, true,null,null,null);
+			userManager.addNewUser("s", "s", "Aaron",Shop.ALL, Role.SUPPORT, true,null,null,null);
 		} catch (WeakPassword | PermissionDenied e) {
 			e.printStackTrace();
 		}
@@ -93,35 +94,7 @@ public class InitializeDB {
 		productManager.addProduct(new Product("Field Beauty", 40.0, 0, "Bouquet",
 				ImageFile.asEncodedString("./src/server/gallery/b1.jpg")));
 
-//		productManager.addProduct(new Product("Warm White", 60.0, 0, "Bouquet",
-//				ImageFile.asEncodedString("./src/server/gallery/b2.jpg")));
-//		
-//		productManager.addProduct(new Product("Pink Spring", 55.0, 0, "Bouquet",
-//				ImageFile.asEncodedString("./src/server/gallery/b3.jpg")));
-//		
-//		productManager.addProduct(
-//				new Product("Cute Ball", 70.0, 0, "Bouquet", ImageFile.asEncodedString("./src/server/gallery/b4.jpg")));
-//		
-//		productManager.addProduct(new Product("High Ground", 85.0, 0, "Bouquet",
-//				ImageFile.asEncodedString("./src/server/gallery/b5.jpg")));
-//		
-//		productManager.addProduct(
-//				new Product("With Love", 65.0, 0, "Bouquet", ImageFile.asEncodedString("./src/server/gallery/b6.jpg")));
-//		
-//		productManager.addProduct(new Product("Happy moments", 200.0, 0, "Wedding",
-//				ImageFile.asEncodedString("./src/server/gallery/w1.jpg")));
-//		
-//		productManager.addProduct(
-//				new Product("Memories", 150.0, 0, "Funeral", ImageFile.asEncodedString("./src/server/gallery/f1.jpg")));
-//		
-//		productManager.addProduct(new Product("Pink Orchid", 120.0, 0, "Flowerpot",
-//				ImageFile.asEncodedString("./src/server/gallery/p1.jpg")));
-//		
-//		productManager.addProduct(new Product("1m White Rose", 25.0, 0, "Retail",
-//				ImageFile.asEncodedString("./src/server/gallery/r1.jpg")));
-//		
-//		productManager.addProduct(new Product("0.6m Red Rose", 10.0, 0, "Retail",
-//				ImageFile.asEncodedString("./src/server/gallery/r2.jpg")));
+
 		productManager.addProduct(new Product("Warm White", 60.0, 0, "Bouquet",
 				ImageFile.asEncodedString("./src/server/gallery/b2.jpg")));
 

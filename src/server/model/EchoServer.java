@@ -2,6 +2,7 @@ package server.model;
 
 import java.io.IOException;
 import java.sql.SQLException;
+import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.ArrayList;
 
 import common.Request;
@@ -91,7 +92,12 @@ public class EchoServer extends AbstractServer {
 			request = handleGetUsers(request);
 			break;
 		case ADD_USER:
-			request = handleAddUser(request);
+			try {
+				request = handleAddUser(request);
+			} catch (SQLIntegrityConstraintViolationException e1) {
+				e1.printStackTrace();
+				
+			}
 			break;
 		case APPROVE_USER:
 			request = handleApproveUser(request);
@@ -212,14 +218,16 @@ public class EchoServer extends AbstractServer {
 		return request;
 	}
 
-	private Request handleAddUser(Request request) {
+	private Request handleAddUser(Request request) throws SQLIntegrityConstraintViolationException {
 		/*
 		 * requestType.ADD_USER
 		 */
 		User toAdd = User.fromJson(request.data);
+		
+
 		try {
 			if (!manager.getUserManager(request.user).addNewUser(toAdd.username, toAdd.password, toAdd.nickname,toAdd.shopname,
-					toAdd.userrole, toAdd.approved)) {
+					toAdd.userrole, toAdd.approved,toAdd.cardNumber,toAdd.exDate,toAdd.cvv)) {
 				/* User already exists. */
 				request.requestType = RequestType.REQUEST_FAILED;
 			}
@@ -231,6 +239,11 @@ public class EchoServer extends AbstractServer {
 		} catch (PermissionDenied e) {
 			request.requestType = RequestType.FORBIDDEN;
 			request.data = new ServerError("Only manager can approve new users.").toJson();
+		}
+		 catch (SQLIntegrityConstraintViolationException e1) {
+		e1.printStackTrace();	
+		request.requestType = RequestType.REQUEST_FAILED;;
+		request.data = new ServerError("User name allready in dataBase").toJson();
 		}
 		return request;
 	}
