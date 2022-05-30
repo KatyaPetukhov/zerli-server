@@ -192,8 +192,8 @@ public class EchoServer extends AbstractServer {
 		ServerUserManager serverUserManager = new ServerUserManager(request.user, manager.getConnection());
 		if (serverUserManager.setSurveyAnswers(surveyRequest.getQuestion1(), surveyRequest.getQuestion2(),
 				surveyRequest.getQuestion3(), surveyRequest.getQuestion4(), surveyRequest.getQuestion5(),
-				surveyRequest.getQuestion6(), surveyRequest.getType(), surveyRequest.getDate(),
-				surveyRequest.getShopName()))
+				surveyRequest.getQuestion6(), surveyRequest.getType(), surveyRequest.getShopName(),
+				surveyRequest.getDate()))
 			request.data = null;
 		else {
 			request.requestType = RequestType.REQUEST_FAILED;
@@ -208,7 +208,6 @@ public class EchoServer extends AbstractServer {
 		ServerUserManager serverUserManager = new ServerUserManager(request.user, manager.getConnection());
 		complaintList = serverUserManager.getAllComplaints(request.user.nickname);
 		request.data = complaintList.toJson();
-
 		return request;
 	}
 

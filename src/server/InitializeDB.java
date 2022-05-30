@@ -91,10 +91,10 @@ public class InitializeDB {
 		try {
 			ServerUserManager.resetSurvey(connection);
 			ServerUserManager userManager = new ServerUserManager(worker, connection);
-			userManager.setSurveyAnswers(0, 0, 0, 0, 0, 0, "1", "2", "3");
-			userManager.setSurveyAnswers(0, 0, 0, 0, 0, 0, "1", "2", "3");
-			userManager.setSurveyAnswers(0, 0, 0, 0, 0, 0, "1", "2", "3");
-			userManager.setSurveyAnswers(0, 0, 0, 0, 0, 0, "1", "2", "3");
+			userManager.setSurveyAnswers(1,2, 1, 4, 3, 7, "Shop survey", "HAIFA", "2022/05");
+//			userManager.setSurveyAnswers(0, 0, 0, 0, 0, 0, "1", "2", "3");
+//			userManager.setSurveyAnswers(0, 0, 0, 0, 0, 0, "1", "2", "3");
+//			userManager.setSurveyAnswers(0, 0, 0, 0, 0, 0, "1", "2", "3");
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

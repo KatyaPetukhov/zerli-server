@@ -362,4 +362,38 @@ public class ServerUserManager extends BaseSQL implements UserManager {
 		return true;
 	}
 
+	@Override
+	public boolean getMonthAvarge() {
+
+//SELECT AVG(q1) AS 'ANSq1', avg(q2) AS 'ANS2q2', AVG(q3) AS 'ANSq3', avg(q4) AS 'ANS2q4', AVG(q5) AS 'ANSq5', avg(q6) AS 'ANS2q6'
+//FROM surveys
+//WHERE  shopName='HAIFA' and  surveyType='Shop survey' 
+
+//		SELECT AVG(q1) AS 'ANSq1', avg(q2) AS 'ANS2q2', AVG(q3) AS 'ANSq3', avg(q4) AS 'ANS2q4', AVG(q5) AS 'ANSq5', avg(q6) AS 'ANS2q6'
+//		FROM surveys
+//		WHERE  type='sale' 
+
+	}
+//
+//		ComplaintList complaintList = new ComplaintList();
+//		complaintList.complaints = new ArrayList<Complaint>();
+//		String query = "SELECT * FROM complaints WHERE supportName = '" + supportName + "';";
+//		try {
+//			ResultSet rs = runQuery(connection, query);
+//			while (rs.next()) { // for lines
+//				Complaint complaint = new Complaint();
+//				complaint.userName = rs.getString("username");
+//				complaint.orderId = rs.getString("orderId");
+//				complaint.complaint = rs.getString("complaint");
+//				complaint.date = rs.getString("date");
+//				complaint.price = rs.getString("price");
+//				complaint.complaintStatus = rs.getString("complaintStatus");
+//				complaint.refund = rs.getString("refund");
+//				complaintList.complaints.add(complaint);
+//			}
+//		} catch (SQLException e) {
+//			e.printStackTrace();
+//		}
+//		return complaintList;	}
+
 }
