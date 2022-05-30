@@ -7,6 +7,7 @@ import java.util.ArrayList;
 
 import common.Request;
 import common.RequestType;
+import common.Role;
 import common.interfaces.CartManager;
 import common.interfaces.UserManager.PermissionDenied;
 import common.interfaces.UserManager.WeakPassword;
@@ -53,8 +54,15 @@ public class EchoServer extends AbstractServer {
 			respond(client, request);
 			return;
 		}
+		
+	
+		if(!manager.userLoggedIn(request.user))//If user is loggedIn he doesnt need to be validated
+		  request.user = manager.validateUser(request.user);
+		
 		if(request.requestType.equals(RequestType.LOG_OFF_USER)) {
+			
 			request = handleLogOff(request);
+		
 			respond(client, request);
 			return;
 		}
@@ -63,8 +71,6 @@ public class EchoServer extends AbstractServer {
 			respond(client, request);
 			return;
 		}
-	
-		request.user = manager.validateUser(request.user);
 		if (request.user == null) {
 			/*
 			 * If user is null after the validation, meaning some user data is invalid.
@@ -174,9 +180,10 @@ public class EchoServer extends AbstractServer {
 
 	private Request handleLogOff(Request request) {
 		User user = User.fromJson(request.data);
-
-		if(manager.logOffUser(user))
-			return request;
+		
+		if(manager.logOffUser(user)) {
+			return request;}
+		
 		request.requestType = RequestType.REQUEST_FAILED;
 		return request;
 	}
@@ -235,18 +242,24 @@ public class EchoServer extends AbstractServer {
 	}
 
 	/* Handler for requestType: */
-	private Request handleGetUser(Request request) {
+	private Request handleGetUser(Request request) {////////////////////////////////////////////////////////////////////////////////
 		/*
 		 * requestType.GET_USER
 		 */
 		System.out.println("Correct user requested.");
 		User toCheck = User.fromJson(request.data);
-		toCheck = manager.validateUser(toCheck);
+		
+		toCheck.userrole=Role.WORKER;
+		if(!manager.userLoggedIn(toCheck)) {
+			System.out.println("User to be checkd is: " + toCheck.username);
+			toCheck = manager.validateUser(toCheck);}
+		
+		else toCheck = null;
+		
 		if (toCheck == null) {
 			System.out.println("Incorrect request.");
 			request.data = null;
 		} else {
-			handleLogIn(request);
 			request.data = toCheck.toJson();
 		}
 		return request;

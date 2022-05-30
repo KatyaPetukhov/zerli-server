@@ -3,6 +3,8 @@ package server.model;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 import common.interfaces.CartManager;
 import common.interfaces.OrderManager;
@@ -37,8 +39,11 @@ public class DBManager {
 	private String username;
 	private String password;
 	private User guestUser;
+	private List<String> loggedInUsers = new ArrayList<String>();
 
 	private boolean isConnected;
+	
+
 
 	public DBManager() {
 		this(getDefaultURL(), DEFAULT_USERNAME, DEFAULT_PASSWORD);
@@ -94,24 +99,33 @@ public class DBManager {
 
 	public UserManager getUserManager(User requestedBy) {
 		try {
+	
 			return new ServerUserManager(requestedBy, getConnection());
 		} catch (InstantiationException | IllegalAccessException | ClassNotFoundException | SQLException e) {
-			// TODO Auto-generated catch block
+			
 			e.printStackTrace();
 		}
 		return null;
 	}
+	
+
 
 	public User validateUser(User user) {
-		
+
 		/*
 		 * Return null if user is incorrect or does not match the password or role.
 		 * Returning null will result in "forbidden" response.
 		 */
+		
+		if(user != null && loggedInUsers.contains(user.username) ) {
+			
+					return getUserManager(user).getLoggedInUser(user.username, user.password);}
+			
 		if (user == null || user.username == null || user.userrole == Role.GUEST) {
 			/* No user information at all is fine and defined as Guest access. */
 			return guestUser;
 		}
+
 		return getUserManager(null).getUser(user.username, user.password);
 	}
 		
@@ -180,13 +194,40 @@ public class DBManager {
 	}
 
 	public boolean logOffUser(User user) {
-		// TODO Auto-generated method stub
-		return getUserManager(null).logOffUser(user);
+	
+		getUserManager(null).logOffUser(user);
+		loggedInUsers.remove(user.username);
+		System.out.println("User removed from loggedIn users list");
+				
+		return true;
+		
+			
+	
 	}
 	
 	public boolean logInUser(User user) {
-		// TODO Auto-generated method stub
-		return getUserManager(null).logInUser(user);
+		if(loggedInUsers.contains(user.username))
+				return false;
+			if(getUserManager(null).logInUser(user)) {
+				System.out.println("User added to loggedIn users list");
+				loggedInUsers.add(user.username);
+				return true;
+			}
+				
+		return false ;
+	}
+	
+	public boolean userLoggedIn(User user) {
+		if(user == null || user.userrole == null ) {
+			System.out.println("222 DBManager " + user);
+			return false;}
+		
+		if(loggedInUsers.contains(user.username)) {
+			System.out.println("226 DBManager " + user.username);
+			return true;}
+		
+		System.out.println("229 DBManager " + loggedInUsers.contains(user.username) +" " + user.username);
+		return false;
 	}
 
 	

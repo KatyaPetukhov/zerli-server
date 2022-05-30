@@ -34,7 +34,7 @@ public class ServerUserManager extends BaseSQL implements UserManager {
 	private static String EXPIRATION_DATE = "expirationDate"; 
 	private static String CVV = "CVV"; 
 	private static String LOG_INFO = "logInfo"; // boolean
-	private List<String> logedInUsers = new ArrayList<>();
+	
 
 	private static String VARCHAR = " varchar(255)";
 	private static String BOOLEAN = " boolean";
@@ -103,6 +103,34 @@ public class ServerUserManager extends BaseSQL implements UserManager {
 		}
 
 	}
+	@Override
+	public User getLoggedInUser(String username, String password) {
+		String query = "SELECT * FROM " + TABLE_NAME + " WHERE " + USERNAME + "='" + username + "';";
+		try {
+			ResultSet rs = runQuery(connection, query);
+			/* username is a key, so there can be 0 or 1 objects only. */
+			while (rs.next()) {
+				User user = new User();
+				user.username = rs.getString(USERNAME);
+				user.password = rs.getString(PASSWORD);
+				user.nickname = rs.getString(NICKNAME);
+				user.shopname = Shop.valueOf(rs.getString(SHOP_NAME));
+				user.approved = (rs.getInt(APPROVED) != 0 ? true : false);
+				user.userrole = Role.valueOf(rs.getString(USERROLE));
+				user.cardNumber = rs.getString(CARD_NUMBER);
+				user.exDate = rs.getString(EXPIRATION_DATE);
+				user.cvv = rs.getString(CVV);
+				user.logInfo = (rs.getInt(LOG_INFO) != 0 ? true : false);
+			
+	
+				return user;
+				
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
 	
 	public static void resetIncomeReports(Connection connection) {
 		String query = "DROP TABLE IF EXISTS " + "income_reports" + ";";
@@ -128,10 +156,11 @@ public class ServerUserManager extends BaseSQL implements UserManager {
 		return incomeReportList;
 	}
 	
+	
+	
 	@Override
 	public User getUser(String username, String password) {
 		String query = "SELECT * FROM " + TABLE_NAME + " WHERE " + USERNAME + "='" + username + "';";
-	
 		try {
 			ResultSet rs = runQuery(connection, query);
 			/* username is a key, so there can be 0 or 1 objects only. */
@@ -147,7 +176,7 @@ public class ServerUserManager extends BaseSQL implements UserManager {
 				user.exDate = rs.getString(EXPIRATION_DATE);
 				user.cvv = rs.getString(CVV);
 				user.logInfo = (rs.getInt(LOG_INFO) != 0 ? true : false);
-				if (!user.password.equals(password) || logedInUsers.contains(user.username))  {
+				if (!user.password.equals(password) || user.logInfo )  {
 				
 					return null;
 				}
@@ -162,16 +191,6 @@ public class ServerUserManager extends BaseSQL implements UserManager {
 	}
 	
 
-	private void logInUser(String username) {
-		String query = "UPDATE " + TABLE_NAME + " SET " + LOG_INFO + "=1 WHERE " + USERNAME + "='" + username + "';";
-		try {
-			runUpdate(connection, query);
-			logedInUsers.add(username);
-		} catch (SQLException e) {
-			
-			e.printStackTrace();
-		}
-	}
 
 	@Override
 	public boolean addNewUser(String username, String password, String nickname,Shop shopname, Role role, boolean approved,String cardNumber,String expirationDate,String cvv,boolean logInfo)
@@ -342,10 +361,12 @@ public class ServerUserManager extends BaseSQL implements UserManager {
 	@Override
 	public boolean changeStatus(User user) {
 		String query;
-		if(user.approved)
-			query = "UPDATE users SET approved = '0' WHERE username = '"+user.username+"';";
+		if (!user.shopname.equals(Shop.NONE))//FREEZE OPTION
+			query = "UPDATE users SET approved = 0, userrole = 'GUEST' WHERE username = '"+user.username+"';";
+		else if(user.approved)
+			query = "UPDATE users SET approved = 0 WHERE username = '"+user.username+"';";
 		else
-			query = "UPDATE users SET approved = '1' WHERE username = '"+user.username+"';";
+			query = "UPDATE users SET approved = 1, userrole = 'CUSTOMER' WHERE username = '"+user.username+"';";
 		try {
 			runUpdate(connection, query);
 		} catch (SQLException e) {
@@ -361,6 +382,7 @@ public class ServerUserManager extends BaseSQL implements UserManager {
 		String query = "UPDATE " + TABLE_NAME + " SET " + LOG_INFO + "=1 WHERE " + USERNAME + "='" + user.username + "';";
 		try {
 			runUpdate(connection, query);
+		
 		} catch (SQLException e) {
 			e.printStackTrace();
 			return false;
@@ -373,7 +395,6 @@ public class ServerUserManager extends BaseSQL implements UserManager {
 		String query = "UPDATE " + TABLE_NAME + " SET " + LOG_INFO + "=0 WHERE " + USERNAME + "='" + user.username + "';";
 		try {
 			runUpdate(connection, query);
-			logedInUsers.remove(user.username);
 		} catch (SQLException e) {
 			e.printStackTrace();
 			return false;
