@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.List;
 
 import common.Role;
 
@@ -33,6 +34,7 @@ public class ServerUserManager extends BaseSQL implements UserManager {
 	private static String EXPIRATION_DATE = "expirationDate"; 
 	private static String CVV = "CVV"; 
 	private static String LOG_INFO = "logInfo"; // boolean
+	private List<String> logedInUsers = new ArrayList<>();
 
 	private static String VARCHAR = " varchar(255)";
 	private static String BOOLEAN = " boolean";
@@ -145,7 +147,8 @@ public class ServerUserManager extends BaseSQL implements UserManager {
 				user.exDate = rs.getString(EXPIRATION_DATE);
 				user.cvv = rs.getString(CVV);
 				user.logInfo = (rs.getInt(LOG_INFO) != 0 ? true : false);
-				if (!user.password.equals(password) || user.logInfo)  {
+				if (!user.password.equals(password) || logedInUsers.contains(user.username))  {
+				
 					return null;
 				}
 				
@@ -163,6 +166,7 @@ public class ServerUserManager extends BaseSQL implements UserManager {
 		String query = "UPDATE " + TABLE_NAME + " SET " + LOG_INFO + "=1 WHERE " + USERNAME + "='" + username + "';";
 		try {
 			runUpdate(connection, query);
+			logedInUsers.add(username);
 		} catch (SQLException e) {
 			
 			e.printStackTrace();
@@ -369,6 +373,7 @@ public class ServerUserManager extends BaseSQL implements UserManager {
 		String query = "UPDATE " + TABLE_NAME + " SET " + LOG_INFO + "=0 WHERE " + USERNAME + "='" + user.username + "';";
 		try {
 			runUpdate(connection, query);
+			logedInUsers.remove(user.username);
 		} catch (SQLException e) {
 			e.printStackTrace();
 			return false;
