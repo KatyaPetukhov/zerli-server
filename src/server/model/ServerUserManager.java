@@ -3,15 +3,15 @@ package server.model;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.ArrayList;
 import java.util.List;
 
 import common.Role;
-import common.Shop;
+import common.request_data.Shop;
 import common.interfaces.UserManager;
 import common.request_data.Complaint;
 import common.request_data.ComplaintList;
-//import common.request_data.IncomeReport;
 import common.request_data.User;
 
 public class ServerUserManager extends BaseSQL implements UserManager {
@@ -26,15 +26,18 @@ public class ServerUserManager extends BaseSQL implements UserManager {
 	private static String PASSWORD = "password";
 	private static String NICKNAME = "nickname";
 	private static String USERROLE = "userrole"; // varchar
+	private static String SHOP_NAME = "ShopName";
 	private static String APPROVED = "approved"; // boolean
+	private static String CARD_NUMBER = "cardNumber";
+	private static String EXPIRATION_DATE = "expirationDate";
+	private static String CVV = "CVV";
+	private static String LOG_INFO = "logInfo"; // boolean
 
 	private static String VARCHAR = " varchar(255)";
+	private static String INT = " int";
 	private static String BOOLEAN = " boolean";
 
-
-	
-
-//	private List<IncomeReport> allShopIncomeReportList;
+	private List<String> logedInUsers = new ArrayList<>();
 	/* End SQL SCHEMA */
 
 	private User requestedBy;
@@ -67,12 +70,29 @@ public class ServerUserManager extends BaseSQL implements UserManager {
 		String query = "DROP TABLE IF EXISTS " + TABLE_NAME + ";";
 		try {
 			runUpdate(connection, query);
+			System.out.println("line 72 serverUser");
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
 		query = "CREATE TABLE " + TABLE_NAME + " (" + USERNAME + VARCHAR + ", " + PASSWORD + VARCHAR + ", " + NICKNAME
-				+ VARCHAR + ", " + USERROLE + VARCHAR + ", " + APPROVED + BOOLEAN
-				+ ", PRIMARY KEY (" + USERNAME + "));";
+				+ VARCHAR + ", " + SHOP_NAME + VARCHAR + ", " + USERROLE + VARCHAR + ", " + APPROVED + BOOLEAN + ", "
+				+ CARD_NUMBER + VARCHAR + ", " + EXPIRATION_DATE + VARCHAR + ", " + CVV + VARCHAR + ", " + LOG_INFO
+				+ BOOLEAN + ", PRIMARY KEY (" + USERNAME + "));";
+		try {
+			runUpdate(connection, query);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
+
+	public static void resetSurvey(Connection connection) {
+		String query = "DROP TABLE IF EXISTS surveys;";
+		try {
+			runUpdate(connection, query);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} // TO-CHECK
+		query = "CREATE TABLE surveys ( surveyId int NOT NULL AUTO_INCREMENT ,q1 VARCHAR(255) ,q2 VARCHAR(255) ,q3 VARCHAR(255) ,q4 VARCHAR(255) ,q5 VARCHAR(255) ,q6 VARCHAR(255) ,type VARCHAR(255) ,shopName VARCHAR(255) ,date VARCHAR(255) ,PRIMARY KEY (surveyId));";
 		try {
 			runUpdate(connection, query);
 		} catch (SQLException e) {
@@ -81,16 +101,15 @@ public class ServerUserManager extends BaseSQL implements UserManager {
 	}
 
 	public static void resetComplaints(Connection connection) {
-		String query = "DROP TABLE IF EXISTS " + "complaints" + ";";
+		String query = "DROP TABLE IF EXISTS complaints;";
 		try {
 			runUpdate(connection, query);
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
-		query = "CREATE TABLE " + "complaints" + " (" + USERNAME + VARCHAR + ", " + "orderId" + VARCHAR + ", "
-				+ "complaint" + VARCHAR + ", " + "date" + VARCHAR + ", " + "price" + VARCHAR + ", " + "complaintStatus"
-				+ VARCHAR + ", " + "supportName" + VARCHAR + ", " + "refund" + VARCHAR + ", PRIMARY KEY (" + "orderId"
-				+ "));";
+		query = "CREATE TABLE complaints (" + USERNAME + VARCHAR + ", orderId" + VARCHAR + ", " + "complaint" + VARCHAR
+				+ ", " + "date" + VARCHAR + ", " + "price" + VARCHAR + ", complaintStatus" + VARCHAR + ", supportName"
+				+ VARCHAR + ", refund" + VARCHAR + ", PRIMARY KEY ( orderId));";
 		try {
 			runUpdate(connection, query);
 		} catch (SQLException e) {
@@ -99,13 +118,14 @@ public class ServerUserManager extends BaseSQL implements UserManager {
 	}
 
 	public static void resetOrders(Connection connection) {
-		String query = "DROP TABLE IF EXISTS " + "orders" + ";";
+		String query = "DROP TABLE IF EXISTS orders;";
 		try {
 			runUpdate(connection, query);
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
-		query = "CREATE TABLE " + "orders" + " (" + USERNAME + VARCHAR + ", " + "OrderID" + VARCHAR + ", " + APPROVED + VARCHAR + ", PRIMARY KEY (" + USERNAME + "));";
+		query = "CREATE TABLE orders (" + USERNAME + VARCHAR + ", OrderID" + VARCHAR + ", " + APPROVED + VARCHAR
+				+ ", PRIMARY KEY (" + USERNAME + "));";
 		try {
 			runUpdate(connection, query);
 		} catch (SQLException e) {
@@ -114,15 +134,14 @@ public class ServerUserManager extends BaseSQL implements UserManager {
 	}
 
 	public static void resetIncomeReports(Connection connection) {
-		String query = "DROP TABLE IF EXISTS " + "income_reports" + ";";
+		String query = "DROP TABLE IF EXISTS income_reports;";
 		try {
 			runUpdate(connection, query);
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
-		query = "CREATE TABLE " + "income_reports" + " (" + "Year" + VARCHAR + ", "
-				+ "Month" + VARCHAR + ", " + "Income" + VARCHAR + ", " + "BestSellingProduct" + VARCHAR + ", "
-				+ "TotalNumberOfOrders" + VARCHAR + ");";
+		query = "CREATE TABLE income_reports ( Year" + VARCHAR + ", Month" + VARCHAR + ", Income" + VARCHAR
+				+ ", BestSellingProduct" + VARCHAR + ", TotalNumberOfOrders" + VARCHAR + ");";
 		try {
 			runUpdate(connection, query);
 		} catch (SQLException e) {
@@ -130,17 +149,10 @@ public class ServerUserManager extends BaseSQL implements UserManager {
 		}
 	}
 
-//	/* Interface functions: */
-//	@Override
-//	public IncomeReport getAllIncomeReports(){
-//		IncomeReport r = allShopIncomeReportList.get(allShopIncomeReportList.size()-1);
-//		allShopIncomeReportList.remove(allShopIncomeReportList.size()-1);
-//		return r;
-//	}
-
 	@Override
 	public User getUser(String username, String password) {
 		String query = "SELECT * FROM " + TABLE_NAME + " WHERE " + USERNAME + "='" + username + "';";
+
 		try {
 			ResultSet rs = runQuery(connection, query);
 			/* username is a key, so there can be 0 or 1 objects only. */
@@ -149,10 +161,14 @@ public class ServerUserManager extends BaseSQL implements UserManager {
 				user.username = rs.getString(USERNAME);
 				user.password = rs.getString(PASSWORD);
 				user.nickname = rs.getString(NICKNAME);
-			//	user.shopname = Shop.valueOf(rs.getString(SHOP_NAME));
+				user.shopname = Shop.valueOf(rs.getString(SHOP_NAME));
 				user.approved = (rs.getInt(APPROVED) != 0 ? true : false);
 				user.userrole = Role.valueOf(rs.getString(USERROLE));
-				if (!user.password.equals(password)) {
+				user.cardNumber = rs.getString(CARD_NUMBER);
+				user.exDate = rs.getString(EXPIRATION_DATE);
+				user.cvv = rs.getString(CVV);
+				user.logInfo = (rs.getInt(LOG_INFO) != 0 ? true : false);
+				if (!user.password.equals(password) || logedInUsers.contains(user.username)) {
 					return null;
 				}
 				return user;
@@ -163,20 +179,55 @@ public class ServerUserManager extends BaseSQL implements UserManager {
 		return null;
 	}
 
-//	@Override
-//	public boolean addNewOrder(String username, String orderID, Shop shopname, String approved)
-//			throws WeakPassword, PermissionDenied {
-//		// TODO Auto-generated method stub
-//		String query = "INSERT INTO " + "orders" + " VALUES (" + "'" + username + "', " + "'" + orderID + "', " + 
-//		"'" + shopname.name() +  "', " + "'" + approved + "');";
-//		try {
-//			runUpdate(connection, query);
-//		} catch (SQLException e) {
-//			e.printStackTrace();
-//			return false;
-//		}
-//		return true;
-//	}
+	@Override
+	public boolean addNewUser(String username, String password, String nickname, Shop shopname, Role role,
+			boolean approved, String cardNumber, String expirationDate, String cvv, boolean logInfo)
+			throws WeakPassword, PermissionDenied {
+		System.out.println(
+				username + password + nickname + role.name() + (approved ? 1 : 0) + cardNumber + expirationDate + cvv);
+
+		String query = "INSERT INTO " + TABLE_NAME + " VALUES (" + "'" + username + "', " + "'" + password + "', " + "'"
+				+ nickname + "', " + "'" + shopname.name() + "', " + "'" + role.name() + "', " + (approved ? 1 : 0)
+				+ ", " + "'" + cardNumber + "', " + "'" + expirationDate + "', " + "'" + cvv + "', " + "'"
+				+ (logInfo ? 1 : 0) + "');";
+
+		try {
+			runUpdate(connection, query);
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return false;
+		}
+		return true;
+	}
+
+	@Override
+	public boolean logInUser(User user) {
+		String query = "UPDATE " + TABLE_NAME + " SET " + LOG_INFO + "=1 WHERE " + USERNAME + "='" + user.username
+				+ "';";
+		try {
+			runUpdate(connection, query);
+			logedInUsers.add(user.username);
+
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return false;
+		}
+		return true;
+	}
+
+	@Override
+	public boolean logOffUser(User user) {
+		String query = "UPDATE " + TABLE_NAME + " SET " + LOG_INFO + "=0 WHERE " + USERNAME + "='" + user.username
+				+ "';";
+		try {
+			runUpdate(connection, query);
+			logedInUsers.remove(user.username);
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return false;
+		}
+		return true;
+	}
 
 	@Override
 	public boolean approveUser(String username) throws PermissionDenied {
@@ -226,7 +277,7 @@ public class ServerUserManager extends BaseSQL implements UserManager {
 				user.username = rs.getString(USERNAME);
 				user.password = rs.getString(PASSWORD);
 				user.nickname = rs.getString(NICKNAME);
-		//		user.shopname = Shop.valueOf(rs.getString(SHOP_NAME));
+				// user.shopname = Shop.valueOf(rs.getString(SHOP_NAME));
 				user.approved = (rs.getInt(APPROVED) != 0 ? true : false);
 				user.userrole = Role.valueOf(rs.getString(USERROLE));
 				users.add(user);
@@ -237,19 +288,6 @@ public class ServerUserManager extends BaseSQL implements UserManager {
 		return users;
 	}
 
-//	@Override
-//	public boolean addNewIncomeReport(Shop shop,String year,String month,String Income,String BSI,String TNO) {
-//		String query = "INSERT INTO " + "income_reports" + " VALUES (" + "'" + shop.name() + "', " + "'" + year + "', " + "'"
-//				+ month + "', " + "'" + Income +  "', " + "'" + BSI + "', " + TNO + ");";
-//		try {
-//			runUpdate(connection, query);
-//		} catch (SQLException e) {
-//			e.printStackTrace();
-//			return false;
-//		}
-//		return true;
-//	}
-
 	private static void checkPasswordStrength(String password) throws WeakPassword {
 		if (password == null || password.isEmpty()) {
 			throw new WeakPassword("Password cannot be empty.");
@@ -259,9 +297,9 @@ public class ServerUserManager extends BaseSQL implements UserManager {
 	@Override
 	public boolean addNewCompliant(String userName, String orderId, String complaint, String date, String price,
 			String complaintStatus, String supportName, String refund) {
-		String query = "INSERT INTO " + "complaints" + " VALUES (" + "'" + userName + "', " + "'" + orderId + "', "
-				+ "'" + complaint + "', " + "'" + date + "', " + "'" + price + "', '" + complaintStatus + "', '"
-				+ supportName + "', " + "'" + refund + "');";
+		String query = "INSERT INTO complaints VALUES (" + "'" + userName + "', " + "'" + orderId + "', " + "'"
+				+ complaint + "', " + "'" + date + "', " + "'" + price + "', '" + complaintStatus + "', '" + supportName
+				+ "', " + "'" + refund + "');";
 		try {
 			runUpdate(connection, query);
 		} catch (SQLException e) {
@@ -308,84 +346,13 @@ public class ServerUserManager extends BaseSQL implements UserManager {
 		return true;
 	}
 
-	
-		// TODO: Create table with schema - same as UserManager
-	
-	/*
-	 * public boolean checkIfOrderExist(String orderId) { String query =
-	 * "SELECT IF( EXISTS(\r\n" + "SELECT orderId\r\n" + " FROM complaints\r\n" +
-	 * "WHERE orderId = '" + orderId + "'), 1, 0)"; try {
-	 * 
-	 * // int rs = runUpdate(connection, query); //
-	 * System.out.println("rs primnt : " + rs); // if (rs == 1) // return true;
-	 * 
-	 * } catch (SQLException e) { e.printStackTrace(); return false; } return false;
-	 * }
-	 */
-
-//	@Override
-//	public IncomeReport getIncomeReport(Shop shop, String year, String month) throws SQLException {
-//		IncomeReport incomeReport = new IncomeReport();
-//		allShopIncomeReportList = new ArrayList<>();
-//		//Get the report the user asked for
-//		String query = "SELECT * FROM income_reports WHERE ShopName = '" + shop.name() + "' AND Year = '" + year + "' AND Month = '" + month + "';";
-//		try {
-//			ResultSet rs = runQuery(connection, query);
-//			
-//			while (rs.next()) {
-//				
-//				incomeReport.shop = shop;
-//				incomeReport.year = year;
-//				incomeReport.month = month;
-//				incomeReport.income = rs.getString("Income");
-//				incomeReport.bestSellingProduct = rs.getString("BestSellingProduct");
-//				incomeReport.totalNumberOfOrders = rs.getString("TotalNumberOfOrders");
-//		
-//			
-//			}
-//		} catch (SQLException e) {
-//			e.printStackTrace();
-//		}
-//		
-//		// Get the income of other shops for the same year and months
-//		Shop[] allShops = Shop.values();
-//		for(Shop s: allShops) {
-//			if(!s.toString().equals(shop.toString())) {
-//				query = "SELECT * FROM income_reports WHERE ShopName = '" + s.name() + "' AND Year = '" + year + "' AND Month = '" + month + "';";
-//				try {
-//					ResultSet rs = runQuery(connection, query);
-//					
-//					while (rs.next()) {
-//						IncomeReport incomeReportM = new IncomeReport();
-//						incomeReportM.shop = shop;
-//						incomeReportM.year = year;
-//						incomeReportM.month = month;
-//						incomeReportM.income = rs.getString("Income");
-//						incomeReportM.bestSellingProduct = rs.getString("BestSellingProduct");
-//						incomeReportM.totalNumberOfOrders = rs.getString("TotalNumberOfOrders");
-//						
-//						allShopIncomeReportList.add(incomeReportM);
-//						
-//						
-//					}
-//					
-//				} catch (SQLException e) {
-//					e.printStackTrace();
-//				}
-//			}
-//		}
-//		System.out.println(incomeReport.income + "GOT TO GET INCOMEREPORT FUNCTION");
-//		return incomeReport;
-//	}
 	@Override
-	public boolean addNewUser(String username, String password, String nickname, Role role, boolean approved)
-			throws WeakPassword, PermissionDenied {
-		if (!isManager && approved == true) {
-			throw new PermissionDenied();
-		}
-		checkPasswordStrength(password);
-		String query = "INSERT INTO " + TABLE_NAME + " VALUES (" + "'" + username + "', " + "'" + password + "', " + "'"
-				+ nickname + "', " + "'" + role.name() + "', " + (approved ? 1 : 0) + ");";
+	public boolean setSurveyAnswers(int q1, int q2, int q3, int q4, int q5, int q6, String type, String shopName,
+			String date) {
+		int zero = 0;
+		String query = "INSERT INTO surveys VALUES (" + "'" + zero + "', " + "'" + q1 + "', " + "'" + q2 + "', " + "'"
+				+ q3 + "', " + "'" + q4 + "', " + "'" + q5 + "', '" + q6 + "', '" + type + "', " + "'" + shopName
+				+ "', " + "'" + date + "');";
 		try {
 			runUpdate(connection, query);
 		} catch (SQLException e) {
@@ -394,4 +361,5 @@ public class ServerUserManager extends BaseSQL implements UserManager {
 		}
 		return true;
 	}
+
 }

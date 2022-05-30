@@ -2,11 +2,11 @@ package server.model;
 
 import java.io.IOException;
 import java.sql.SQLException;
+import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.ArrayList;
 
 import common.Request;
 import common.RequestType;
-import common.interfaces.OrderManager;
 import common.interfaces.UserManager.PermissionDenied;
 import common.interfaces.UserManager.WeakPassword;
 import common.request_data.CategoriesList;
@@ -17,6 +17,7 @@ import common.request_data.OrderList;
 import common.request_data.ProductList;
 import common.request_data.Refund;
 import common.request_data.ServerError;
+import common.request_data.Survey;
 import common.request_data.User;
 import ocsf.server.AbstractServer;
 import ocsf.server.ConnectionToClient;
@@ -50,6 +51,16 @@ public class EchoServer extends AbstractServer {
 			System.out.println("Warning! DBManager is null, but server runs.");
 			request.requestType = RequestType.REQUEST_FAILED;
 			request.data = new ServerError("Database is offline").toJson();
+			respond(client, request);
+			return;
+		}
+		if (request.requestType.equals(RequestType.LOG_OFF_USER)) {
+			request = handleLogOff(request);
+			respond(client, request);
+			return;
+		}
+		if (request.requestType.equals(RequestType.LOGIN)) {
+			request = handleLogIn(request);
 			respond(client, request);
 			return;
 		}
@@ -89,7 +100,11 @@ public class EchoServer extends AbstractServer {
 			request = handleGetUser(request);
 			break;
 		case ADD_USER:
-			request = handleAddUser(request);
+			try {
+				request = handleAddUser(request);
+			} catch (SQLIntegrityConstraintViolationException e1) {
+				e1.printStackTrace();
+			}
 			break;
 		case APPROVE_USER:
 			request = handleApproveUser(request);
@@ -145,7 +160,19 @@ public class EchoServer extends AbstractServer {
 			try {
 				request = handleAddOrder(request);
 			} catch (InstantiationException | IllegalAccessException | ClassNotFoundException | SQLException e) {
-				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			break;
+		case GET_ANSWERS_SURVEY:
+			try {
+				request = handleSurveyAnswers(request);
+			} catch (InstantiationException e) {
+				e.printStackTrace();
+			} catch (IllegalAccessException e) {
+				e.printStackTrace();
+			} catch (ClassNotFoundException e) {
+				e.printStackTrace();
+			} catch (SQLException e) {
 				e.printStackTrace();
 			}
 			break;
@@ -158,34 +185,22 @@ public class EchoServer extends AbstractServer {
 		respond(client, request);
 	}
 
-//	private Request handleGetIncomeReportsBC(Request request) throws SQLException {
-//		IncomeReport incomeReport = IncomeReport.fromJson(request.data);
-//		incomeReport = manager.getIncomeReport(incomeReport);
-//		if (incomeReport == null) {
-//			System.out.println("Incorrect request.");
-//			request.data = null;
-//		} else {
-//			request.data = incomeReport.toJson();
-//		}
-//		return request;
-//	
-//	}
-
-//	private Request handleGetIncomeReports(Request request) throws SQLException {
-//		/*
-//		 * requestType.GET_INCOME_REPORT
-//		 */
-//		IncomeReport incomeReport = IncomeReport.fromJson(request.data);
-//		incomeReport = manager.getIncomeReport(incomeReport);
-//		if (incomeReport == null) {
-//			System.out.println("Incorrect request.");
-//			request.data = null;
-//		} else {
-//			request.data = incomeReport.toJson();
-//		}
-//		return request;
-//		
-//	}
+	// NEED-TO-CHECK
+	private Request handleSurveyAnswers(Request request)
+			throws InstantiationException, IllegalAccessException, ClassNotFoundException, SQLException {
+		Survey surveyRequest = Survey.fromJson(request.data);
+		ServerUserManager serverUserManager = new ServerUserManager(request.user, manager.getConnection());
+		if (serverUserManager.setSurveyAnswers(surveyRequest.getQuestion1(), surveyRequest.getQuestion2(),
+				surveyRequest.getQuestion3(), surveyRequest.getQuestion4(), surveyRequest.getQuestion5(),
+				surveyRequest.getQuestion6(), surveyRequest.getType(), surveyRequest.getDate(),
+				surveyRequest.getShopName()))
+			request.data = null;
+		else {
+			request.requestType = RequestType.REQUEST_FAILED;
+			request.data = new ServerError("Request failed in DB.").toJson();
+		}
+		return request;
+	}
 
 	private Request handleGetComplaints(Request request)
 			throws InstantiationException, IllegalAccessException, ClassNotFoundException, SQLException {
@@ -193,6 +208,7 @@ public class EchoServer extends AbstractServer {
 		ServerUserManager serverUserManager = new ServerUserManager(request.user, manager.getConnection());
 		complaintList = serverUserManager.getAllComplaints(request.user.nickname);
 		request.data = complaintList.toJson();
+
 		return request;
 	}
 
@@ -243,14 +259,16 @@ public class EchoServer extends AbstractServer {
 		return request;
 	}
 
-	private Request handleAddUser(Request request) {
+	private Request handleAddUser(Request request) throws SQLIntegrityConstraintViolationException {
 		/*
 		 * requestType.ADD_USER
 		 */
 		User toAdd = User.fromJson(request.data);
+
 		try {
 			if (!manager.getUserManager(request.user).addNewUser(toAdd.username, toAdd.password, toAdd.nickname,
-					toAdd.userrole, toAdd.approved)) {
+					toAdd.shopname, toAdd.userrole, toAdd.approved, toAdd.cardNumber, toAdd.exDate, toAdd.cvv,
+					toAdd.logInfo)) {
 				/* User already exists. */
 				request.requestType = RequestType.REQUEST_FAILED;
 			}
@@ -262,6 +280,11 @@ public class EchoServer extends AbstractServer {
 		} catch (PermissionDenied e) {
 			request.requestType = RequestType.FORBIDDEN;
 			request.data = new ServerError("Only manager can approve new users.").toJson();
+		} catch (SQLIntegrityConstraintViolationException e1) {
+			e1.printStackTrace();
+			request.requestType = RequestType.REQUEST_FAILED;
+			;
+			request.data = new ServerError("User name allready in dataBase").toJson();
 		}
 		return request;
 	}
@@ -320,6 +343,27 @@ public class EchoServer extends AbstractServer {
 			request.data = order.toJson();
 		}
 
+		return request;
+	}
+
+	private Request handleLogIn(Request request) {
+		System.out.println("Correct user requested.");
+		User toCheck = User.fromJson(request.data);
+		if (!manager.logInUser(toCheck)) {
+			System.out.println("Incorrect request.");
+			request.data = null;
+		} else {
+			request.data = toCheck.toJson();
+		}
+		return request;
+	}
+
+	private Request handleLogOff(Request request) {
+		User user = User.fromJson(request.data);
+
+		if (manager.logOffUser(user))
+			return request;
+		request.requestType = RequestType.REQUEST_FAILED;
 		return request;
 	}
 

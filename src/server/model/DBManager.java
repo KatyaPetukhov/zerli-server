@@ -5,7 +5,7 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 
 import common.Role;
-import common.Shop;
+import common.request_data.Shop;
 import common.interfaces.OrderManager;
 import common.interfaces.ProductManager;
 import common.interfaces.UserManager;
@@ -18,7 +18,6 @@ public class DBManager {
 	 * Handles all SQL requests via sql_queries. Provides high level API for
 	 * EchoServer for data manipulation.
 	 */
-
 	private static String DRIVER_CLASS = "com.mysql.cj.jdbc.Driver";
 	/* We can probably reuse the format for a more flexible connection: */
 	private static String PREFIX = "jdbc:mysql://";
@@ -150,11 +149,13 @@ public class DBManager {
 		return null;
 	}
 
-//	public IncomeReport getIncomeReport(IncomeReport r) throws SQLException {
-//		return getUserManager(null).getIncomeReport(r.shop, r.year, r.month);
-//	}
-//	
-//	public IncomeReport getIncomeReportBC() {
-//		return getUserManager(null).getAllIncomeReports();
-//	}
+	public boolean logOffUser(User user) {
+		// TODO Auto-generated method stub
+		return getUserManager(null).logOffUser(user);
+	}
+
+	public boolean logInUser(User user) {
+		// TODO Auto-generated method stub
+		return getUserManager(null).logInUser(user);
+	}
 }

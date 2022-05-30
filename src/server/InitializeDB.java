@@ -2,6 +2,7 @@ package server;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.sql.SQLIntegrityConstraintViolationException;
 
 import common.Role;
 import common.interfaces.UserManager.PermissionDenied;
@@ -9,6 +10,7 @@ import common.interfaces.UserManager.WeakPassword;
 import common.request_data.ImageFile;
 import common.request_data.Order;
 import common.request_data.Product;
+import common.request_data.Shop;
 import common.request_data.User;
 import server.model.DBManager;
 import server.model.ServerOrderManager;
@@ -17,7 +19,7 @@ import server.model.ServerUserManager;
 
 public class InitializeDB {
 	/* Add a default set of data that is enough to play with the application. */
-	public void f(DBManager model) throws PermissionDenied {
+	public void f(DBManager model) throws PermissionDenied, SQLIntegrityConstraintViolationException {
 		createDatabase(model);
 
 		Connection connection = null;
@@ -27,10 +29,11 @@ public class InitializeDB {
 			e.printStackTrace();
 			return;
 		}
-		addUsers(connection);
 		addProducts(connection);
+		addUsers(connection);
 		addComplaints(connection);
 		addOrderTable(connection);
+		addSurveys(connection);
 		// addOrders(connection);
 		// addReports(connection);
 	}
@@ -82,22 +85,39 @@ public class InitializeDB {
 		}
 	}
 
+	private void addSurveys(Connection connection) {
+		User worker = new User();
+		worker.userrole = Role.WORKER;
+		try {
+			ServerUserManager.resetSurvey(connection);
+			ServerUserManager userManager = new ServerUserManager(worker, connection);
+			userManager.setSurveyAnswers(0, 0, 0, 0, 0, 0, "1", "2", "3");
+			userManager.setSurveyAnswers(0, 0, 0, 0, 0, 0, "1", "2", "3");
+			userManager.setSurveyAnswers(0, 0, 0, 0, 0, 0, "1", "2", "3");
+			userManager.setSurveyAnswers(0, 0, 0, 0, 0, 0, "1", "2", "3");
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
 	private void addOrderTable(Connection connection) {
 		ServerOrderManager.resetOrders(connection);
 	}
 
-	private void addUsers(Connection connection) {
-		ServerUserManager.resetUsers(connection);
+	private void addUsers(Connection connection) throws SQLIntegrityConstraintViolationException {
 		User manager = new User();
 		manager.userrole = Role.MANAGER;
 		try {
-			ServerProductManager.resetProducts(connection);
+			ServerUserManager.resetUsers(connection);
+			System.out.println("intzlie DB line 97");
 			ServerUserManager userManager = new ServerUserManager(manager, connection);
-			userManager.addNewUser("u", "u", "Katya", Role.CUSTOMER, true);
-			userManager.addNewUser("o", "o", "Jessika", Role.OWNER, true);
-			userManager.addNewUser("m", "m", "Niv", Role.MANAGER, true);
-			userManager.addNewUser("w", "w", "Who", Role.WORKER, true);
-			userManager.addNewUser("s", "s", "Aaron", Role.SUPPORT, true);
+
+			userManager.addNewUser("u", "u", "Katya", Shop.NONE, Role.GUEST, false, "1111222233334444", "18/7/2023",
+					"132", false);
+			userManager.addNewUser("o", "o", "Jessika", Shop.ALL, Role.OWNER, true, null, null, null, false);
+			userManager.addNewUser("m", "m", "Niv", Shop.HAIFA, Role.MANAGER, true, null, null, null, false);
+			userManager.addNewUser("w", "w", "Who", Shop.HAIFA, Role.WORKER, true, null, null, null, false);
+			userManager.addNewUser("s", "s", "Aaron", Shop.ALL, Role.SUPPORT, true, null, null, null, false);
 		} catch (WeakPassword | PermissionDenied e) {
 			e.printStackTrace();
 		}
