@@ -111,6 +111,7 @@ public class DBManager {
 
 
 	public User validateUser(User user) {
+		
 
 		/*
 		 * Return null if user is incorrect or does not match the password or role.

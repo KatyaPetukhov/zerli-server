@@ -121,6 +121,7 @@ public class ServerUserManager extends BaseSQL implements UserManager {
 				user.exDate = rs.getString(EXPIRATION_DATE);
 				user.cvv = rs.getString(CVV);
 				user.logInfo = (rs.getInt(LOG_INFO) != 0 ? true : false);
+				user.setAccountStatus();
 			
 	
 				return user;
@@ -176,6 +177,7 @@ public class ServerUserManager extends BaseSQL implements UserManager {
 				user.exDate = rs.getString(EXPIRATION_DATE);
 				user.cvv = rs.getString(CVV);
 				user.logInfo = (rs.getInt(LOG_INFO) != 0 ? true : false);
+				user.setAccountStatus();
 				if (!user.password.equals(password) || user.logInfo )  {
 				
 					return null;
@@ -274,6 +276,7 @@ public class ServerUserManager extends BaseSQL implements UserManager {
 				user.shopname = Shop.valueOf(rs.getString(SHOP_NAME));
 				user.approved = (rs.getInt(APPROVED) != 0 ? true : false);
 				user.userrole = Role.valueOf(rs.getString(USERROLE));
+				user.setAccountStatus();
 				usersList.Users.add(user);
 			}
 		} catch (SQLException e) {
@@ -360,19 +363,26 @@ public class ServerUserManager extends BaseSQL implements UserManager {
 
 	@Override
 	public boolean changeStatus(User user) {
-		String query;
-		if (!user.shopname.equals(Shop.NONE))//FREEZE OPTION
-			query = "UPDATE users SET approved = 0, userrole = 'GUEST' WHERE username = '"+user.username+"';";
-		else if(user.approved)
+		String query=null;
+		String switchCase = user.accountStatus;
+		switch(switchCase) {
+		case "Frozen"://FREEZE OPTION
+			query = "UPDATE users SET approved = 1, userrole = 'GUEST' WHERE username = '"+user.username+"';";
+			break;
+		case "Blocked":
 			query = "UPDATE users SET approved = 0 WHERE username = '"+user.username+"';";
-		else
+			break;
+		case "Approved":
 			query = "UPDATE users SET approved = 1, userrole = 'CUSTOMER' WHERE username = '"+user.username+"';";
+			break;
+		}
 		try {
 			runUpdate(connection, query);
 		} catch (SQLException e) {
 			e.printStackTrace();
 			return false;
 		}
+		
 		return true;
 		
 	}

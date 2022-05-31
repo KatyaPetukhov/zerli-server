@@ -77,7 +77,7 @@ public class InitializeDB {
 			ServerUserManager.resetUsers(connection);
 			ServerUserManager userManager = new ServerUserManager(manager, connection);
 
-			userManager.addNewUser("u", "u", "Katya",Shop.NONE, Role.CUSTOMER, false,"1111222233334444","18/7/2023","132",false);
+			userManager.addNewUser("u", "u", "Katya",Shop.NONE, Role.GUEST, true,"1111222233334444","18/7/2023","132",false);
 			userManager.addNewUser("o", "o", "Jessika",Shop.ALL, Role.OWNER, true,null,null,null,false);
 			userManager.addNewUser("m", "m", "Niv",Shop.HAIFA, Role.MANAGER, true,null,null,null,false);
 			userManager.addNewUser("w", "w", "Who",Shop.HAIFA, Role.WORKER, true,null,null,null,false);
