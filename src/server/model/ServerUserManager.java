@@ -9,6 +9,8 @@ import java.util.List;
 import common.Role;
 
 import common.interfaces.UserManager;
+import common.request_data.Complaint;
+import common.request_data.ComplaintList;
 import common.request_data.IncomeReport;
 import common.request_data.IncomeReportList;
 
@@ -34,6 +36,7 @@ public class ServerUserManager extends BaseSQL implements UserManager {
 	private static String EXPIRATION_DATE = "expirationDate"; 
 	private static String CVV = "CVV"; 
 	private static String LOG_INFO = "logInfo"; // boolean
+	private static String INT = " int";
 	
 
 	private static String VARCHAR = " varchar(255)";
@@ -66,6 +69,38 @@ public class ServerUserManager extends BaseSQL implements UserManager {
 			return false;
 		}
 		return true;
+	}
+	
+	public static void resetSurvey(Connection connection) {
+		String query = "DROP TABLE IF EXISTS surveys;";
+		try {
+			runUpdate(connection, query);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} // TO-CHECK
+		query = "CREATE TABLE surveys ( surveyId int NOT NULL AUTO_INCREMENT ,q1 VARCHAR(255) ,q2 VARCHAR(255) ,q3 VARCHAR(255) ,q4 VARCHAR(255) ,q5 VARCHAR(255) ,q6 VARCHAR(255) ,type VARCHAR(255) ,shopName VARCHAR(255) ,date VARCHAR(255) ,PRIMARY KEY (surveyId));";
+		try {
+			runUpdate(connection, query);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public static void resetComplaints(Connection connection) {
+		String query = "DROP TABLE IF EXISTS complaints;";
+		try {
+			runUpdate(connection, query);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		query = "CREATE TABLE complaints (" + USERNAME + VARCHAR + ", orderId" + VARCHAR + ", " + "complaint" + VARCHAR
+				+ ", " + "date" + VARCHAR + ", " + "price" + VARCHAR + ", complaintStatus" + VARCHAR + ", supportName"
+				+ VARCHAR + ", refund" + VARCHAR + ", PRIMARY KEY ( orderId));";
+		try {
+			runUpdate(connection, query);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
 	}
 
 	public static void resetUsers(Connection connection) {
@@ -410,6 +445,80 @@ public class ServerUserManager extends BaseSQL implements UserManager {
 			return false;
 		}
 		return true;
+	}
+	
+	@Override
+	public boolean addNewCompliant(String userName, String orderId, String complaint, String date, String price,
+			String complaintStatus, String supportName, String refund) {
+		String query = "INSERT INTO complaints VALUES (" + "'" + userName + "', " + "'" + orderId + "', " + "'"
+				+ complaint + "', " + "'" + date + "', " + "'" + price + "', '" + complaintStatus + "', '" + supportName
+				+ "', " + "'" + refund + "');";
+		try {
+			runUpdate(connection, query);
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return false;
+		}
+		return true;
+	}
+	
+	@Override
+	public ComplaintList getAllComplaints(String supportName) {
+		ComplaintList complaintList = new ComplaintList();
+		complaintList.complaints = new ArrayList<Complaint>();
+		String query = "SELECT * FROM complaints WHERE supportName = '" + supportName + "';";
+		try {
+			ResultSet rs = runQuery(connection, query);
+			while (rs.next()) { // for lines
+				Complaint complaint = new Complaint();
+				complaint.userName = rs.getString("username");
+				complaint.orderId = rs.getString("orderId");
+				complaint.complaint = rs.getString("complaint");
+				complaint.date = rs.getString("date");
+				complaint.price = rs.getString("price");
+				complaint.complaintStatus = rs.getString("complaintStatus");
+				complaint.refund = rs.getString("refund");
+				complaintList.complaints.add(complaint);
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return complaintList;
+	}
+	
+	@Override
+	public boolean setRefundAmount(String orderId, String refund) {
+		String query = "UPDATE complaints SET refund ='" + refund + "' , complaintStatus = 'Approved' WHERE orderId ='"
+				+ orderId + "';";
+		try {
+			runUpdate(connection, query);
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return false;
+		}
+		return true;
+	}
+
+	@Override
+	public boolean setSurveyAnswers(int q1, int q2, int q3, int q4, int q5, int q6, String type, String shopName,
+			String date) {
+		int zero = 0;
+		String query = "INSERT INTO surveys VALUES (" + "'" + zero + "', " + "'" + q1 + "', " + "'" + q2 + "', " + "'"
+				+ q3 + "', " + "'" + q4 + "', " + "'" + q5 + "', '" + q6 + "', '" + type + "', " + "'" + shopName
+				+ "', " + "'" + date + "');";
+		try {
+			runUpdate(connection, query);
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return false;
+		}
+		return true;
+	}
+
+	@Override
+	public boolean getMonthAvarge() {
+		// TODO Auto-generated method stub
+		return false;
 	}
 
 

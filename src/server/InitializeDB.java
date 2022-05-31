@@ -34,6 +34,7 @@ public class InitializeDB {
 		addProducts(connection);
 		addOrderTable(connection);
 		addReports(connection);
+		addComplaints(connection);
 	}
 	
 	private void createDatabase(DBManager model) {
@@ -86,6 +87,36 @@ public class InitializeDB {
 			e.printStackTrace();
 		}
 	}
+	
+	private void addComplaints(Connection connection) {
+		User worker = new User();
+		worker.userrole = Role.WORKER;
+		try {
+			ServerUserManager.resetComplaints(connection);
+			ServerUserManager userManager = new ServerUserManager(worker, connection);
+			userManager.addNewCompliant("Jessica", "123", "ugly flowers", "08.06.22", "100", "Awaiting response",
+					"Aaron", "0");
+			userManager.addNewCompliant("Yarden", "234", "dry boquet", "30.05.22", "50", "Awaiting response", "Aaron",
+					"0");
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	private void addSurveys(Connection connection) {
+		User worker = new User();
+		worker.userrole = Role.WORKER;
+		try {
+			ServerUserManager.resetSurvey(connection);
+			ServerUserManager userManager = new ServerUserManager(worker, connection);
+			userManager.setSurveyAnswers(1, 2, 1, 4, 3, 7, "Shop survey", "HAIFA", "2022/05");
+//			userManager.setSurveyAnswers(0, 0, 0, 0, 0, 0, "1", "2", "3");
+//			userManager.setSurveyAnswers(0, 0, 0, 0, 0, 0, "1", "2", "3");
+//			userManager.setSurveyAnswers(0, 0, 0, 0, 0, 0, "1", "2", "3");
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
 
 	private void addProducts(Connection connection) throws PermissionDenied {
 		User support = new User();
@@ -132,7 +163,7 @@ public class InitializeDB {
 
 	private void addOrderTable(Connection connection) {
 
-		ServerOrderManager.resetProducts(connection);
+		ServerProductManager.resetProducts(connection);
 
 	}
 	

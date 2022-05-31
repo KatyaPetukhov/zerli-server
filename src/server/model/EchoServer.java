@@ -12,11 +12,15 @@ import common.interfaces.CartManager;
 import common.interfaces.UserManager.PermissionDenied;
 import common.interfaces.UserManager.WeakPassword;
 import common.request_data.CategoriesList;
+import common.request_data.ComplaintList;
 import common.request_data.Order;
+import common.request_data.OrderList;
 import common.request_data.IncomeReport;
 import common.request_data.IncomeReportList;
 import common.request_data.ProductList;
+import common.request_data.Refund;
 import common.request_data.ServerError;
+import common.request_data.Survey;
 import common.request_data.User;
 import common.request_data.UsersList;
 import ocsf.server.AbstractServer;
@@ -153,9 +157,66 @@ public class EchoServer extends AbstractServer {
 			}
 			break;
 			
+		case GET_ALL_COMPLAINTS:
+			try {
+				request = handleGetComplaints(request);
+			} catch (InstantiationException e) {
+				e.printStackTrace();
+			} catch (IllegalAccessException e) {
+				e.printStackTrace();
+			} catch (ClassNotFoundException e) {
+				e.printStackTrace();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+			break;
+			
+		case GET_REFUND_AMOUNT:
+			try {
+				request = handleGetRefund(request);
+			} catch (InstantiationException e) {
+				e.printStackTrace();
+			} catch (IllegalAccessException e) {
+				e.printStackTrace();
+			} catch (ClassNotFoundException e) {
+				e.printStackTrace();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+			break;
+			
+		case GET_USER_OREDERS:
+			try {
+				request = handleGetUserOrder(request);
+			} catch (InstantiationException e) {
+				e.printStackTrace();
+			} catch (IllegalAccessException e) {
+				e.printStackTrace();
+			} catch (ClassNotFoundException e) {
+				e.printStackTrace();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+			break;
+			
+		case GET_ANSWERS_SURVEY:
+			try {
+				request = handleSurveyAnswers(request);
+			} catch (InstantiationException e) {
+				e.printStackTrace();
+			} catch (IllegalAccessException e) {
+				e.printStackTrace();
+			} catch (ClassNotFoundException e) {
+				e.printStackTrace();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+			break;
+			
 		case CHANGE_STATUS:
 			request = handleChangeStatus(request);
 			break;
+			
 	
 		default:
 			request.requestType = RequestType.REQUEST_FAILED;
@@ -165,6 +226,54 @@ public class EchoServer extends AbstractServer {
 
 		respond(client, request);
 	}
+	
+	// NEED-TO-CHECK
+		private Request handleSurveyAnswers(Request request)
+				throws InstantiationException, IllegalAccessException, ClassNotFoundException, SQLException {
+			Survey surveyRequest = Survey.fromJson(request.data);
+			ServerUserManager serverUserManager = new ServerUserManager(request.user, manager.getConnection());
+			if (serverUserManager.setSurveyAnswers(surveyRequest.getQuestion1(), surveyRequest.getQuestion2(),
+					surveyRequest.getQuestion3(), surveyRequest.getQuestion4(), surveyRequest.getQuestion5(),
+					surveyRequest.getQuestion6(), surveyRequest.getType(), surveyRequest.getShopName(),
+					surveyRequest.getDate()))
+				request.data = null;
+			else {
+				request.requestType = RequestType.REQUEST_FAILED;
+				request.data = new ServerError("Request failed in DB.").toJson();
+			}
+			return request;
+		}
+		
+		private Request handleGetComplaints(Request request)
+				throws InstantiationException, IllegalAccessException, ClassNotFoundException, SQLException {
+			ComplaintList complaintList = ComplaintList.fromJson(request.data);
+			ServerUserManager serverUserManager = new ServerUserManager(request.user, manager.getConnection());
+			complaintList = serverUserManager.getAllComplaints(request.user.nickname);
+			request.data = complaintList.toJson();
+			return request;
+		}
+
+		private Request handleGetUserOrder(Request request)
+				throws InstantiationException, IllegalAccessException, ClassNotFoundException, SQLException {
+			OrderList orderList = OrderList.fromJson(request.data);
+			ServerOrderManager serverOrderManager = new ServerOrderManager(request.user, manager.getConnection());
+			orderList = serverOrderManager.getOrders(orderList.username);
+			request.data = orderList.toJson();
+			return request;
+		}
+		
+		private Request handleGetRefund(Request request)
+				throws InstantiationException, IllegalAccessException, ClassNotFoundException, SQLException {
+			Refund refundRequest = Refund.fromJson(request.data);
+			ServerUserManager serverUserManager = new ServerUserManager(request.user, manager.getConnection());
+			if (serverUserManager.setRefundAmount(refundRequest.orderId, refundRequest.refund))
+				request.data = null;
+			else {
+				request.requestType = RequestType.REQUEST_FAILED;
+				request.data = new ServerError("Request failed in DB.").toJson();
+			}
+			return request;
+		}
 
 	private Request handleLogIn(Request request) {
 		System.out.println("Correct user requested.");
