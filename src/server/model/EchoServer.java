@@ -11,6 +11,7 @@ import common.interfaces.UserManager.PermissionDenied;
 import common.interfaces.UserManager.WeakPassword;
 import common.request_data.CategoriesList;
 import common.request_data.Order;
+import common.request_data.OrderList;
 import common.request_data.Product;
 import common.request_data.ProductList;
 import common.request_data.ServerError;
@@ -110,6 +111,9 @@ public class EchoServer extends AbstractServer {
 				e.printStackTrace();
 			}
 			break;
+		case GET_ORDERS:
+			request = handleGetOrders(request);
+			break;
 		/* TODO: Missing ADD_PRODUCT, REMOVE_PRODUCT */
 		default:
 			request.requestType = RequestType.REQUEST_FAILED;
@@ -119,6 +123,8 @@ public class EchoServer extends AbstractServer {
 
 		respond(client, request);
 	}
+
+
 
 	private void respond(ConnectionToClient client, Request request) {
 		try {
@@ -228,6 +234,7 @@ public class EchoServer extends AbstractServer {
 		CartManager cartManager;
 		cartManager = new ServerCartManager(request.user, manager.getConnection());
 		Order order = Order.fromJson(request.data);
+		System.out.println("GOT + " + order.address);
 		order = cartManager.submitOrder(order);
 		
 		if (order == null) {
@@ -237,6 +244,20 @@ public class EchoServer extends AbstractServer {
 			request.data = order.toJson();
 		}
 		
+		return request;
+	}
+	
+	
+	private Request handleGetOrders(Request request) {
+		OrderList orders = OrderList.fromJson(request.data);
+		orders = manager.getOrderManager(request.user).getOrders(orders.username);
+		if (orders == null) {
+			System.out.println("Incorrect request.");
+			request.data = null;
+		} else {
+			request.data = orders.toJson();
+		}
+	
 		return request;
 	}
 }

@@ -99,7 +99,7 @@ public class InitializeDB {
 	
 	private void addOrderTable(Connection connection) {
 
-		ServerOrderManager.resetProducts(connection);
+		ServerOrderManager.resetOrders(connection);
 	
 	}
 	
