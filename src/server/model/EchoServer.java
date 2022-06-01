@@ -383,7 +383,7 @@ public class EchoServer extends AbstractServer {
 
 		try {
 			if (!manager.getUserManager(request.user).addNewUser(toAdd.username, toAdd.password, toAdd.nickname,toAdd.shopname,
-					toAdd.userrole, toAdd.approved,toAdd.cardNumber,toAdd.exDate,toAdd.cvv,toAdd.logInfo)) {
+					toAdd.userrole, toAdd.approved,toAdd.cardNumber,toAdd.exDate,toAdd.cvv,toAdd.logInfo,toAdd.userWallet)) {
 				/* User already exists. */
 				request.requestType = RequestType.REQUEST_FAILED;
 			}

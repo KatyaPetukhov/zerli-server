@@ -30,8 +30,9 @@ public class InitializeDB {
 			e.printStackTrace();
 			return;
 		}
-		addUsers(connection);
+		
 		addProducts(connection);
+		addUsers(connection);
 		addOrderTable(connection);
 		addReports(connection);
 		addComplaints(connection);
@@ -78,11 +79,12 @@ public class InitializeDB {
 			ServerUserManager.resetUsers(connection);
 			ServerUserManager userManager = new ServerUserManager(manager, connection);
 
-			userManager.addNewUser("u", "u", "Katya",Shop.NONE, Role.GUEST, true,"1111222233334444","18/7/2023","132",false);
-			userManager.addNewUser("o", "o", "Jessika",Shop.ALL, Role.OWNER, true,null,null,null,false);
-			userManager.addNewUser("m", "m", "Niv",Shop.HAIFA, Role.MANAGER, true,null,null,null,false);
-			userManager.addNewUser("w", "w", "Who",Shop.HAIFA, Role.WORKER, true,null,null,null,false);
-			userManager.addNewUser("s", "s", "Aaron",Shop.ALL, Role.SUPPORT, true,null,null,null,false);
+			userManager.addNewUser("u", "u", "Katya",Shop.NONE, Role.GUEST, true,"1111222233334444","18-7-2023","132",false,"0");
+			userManager.addNewUser("o", "o", "Jessika",Shop.ALL, Role.OWNER, true,null,null,null,false,null);
+			userManager.addNewUser("m", "m", "Niv",Shop.HAIFA, Role.MANAGER, true,null,null,null,false,null);
+			userManager.addNewUser("w1", "w1", "Good one",Shop.HAIFA, Role.WORKER, true,"10",null,null,false,null);
+			userManager.addNewUser("w2", "w2", "Bad one",Shop.HAIFA, Role.WORKER, true,"0",null,null,false,null);
+			userManager.addNewUser("s", "s", "Aaron",Shop.ALL, Role.SUPPORT, true,null,null,null,false,null);
 		} catch (WeakPassword | PermissionDenied e) {
 			e.printStackTrace();
 		}

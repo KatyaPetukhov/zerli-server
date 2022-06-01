@@ -113,7 +113,7 @@ public class ServerUserManager extends BaseSQL implements UserManager {
 		query = "CREATE TABLE " + TABLE_NAME + " (" + USERNAME + VARCHAR + ", " + PASSWORD + VARCHAR + ", " + NICKNAME
 				+ VARCHAR + ", " + SHOP_NAME + VARCHAR + ", "+ USERROLE + VARCHAR + ", " + APPROVED + BOOLEAN 
 				+ ", "+ CARD_NUMBER + VARCHAR + ", "+ EXPIRATION_DATE + VARCHAR + ", "
-				+ CVV + VARCHAR + ", " + LOG_INFO + BOOLEAN + ", PRIMARY KEY (" + USERNAME
+				+ CVV + VARCHAR + ", " + LOG_INFO + BOOLEAN + ", " + "userWallet" + VARCHAR + ", PRIMARY KEY (" + USERNAME
 				+ "));";
 		try {
 			runUpdate(connection, query);
@@ -230,13 +230,14 @@ public class ServerUserManager extends BaseSQL implements UserManager {
 
 
 	@Override
-	public boolean addNewUser(String username, String password, String nickname,Shop shopname, Role role, boolean approved,String cardNumber,String expirationDate,String cvv,boolean logInfo)
+	public boolean addNewUser(String username, String password, String nickname,Shop shopname, Role role,
+			boolean approved,String cardNumber,String expirationDate,String cvv,boolean logInfo,String userWallet)
 			throws WeakPassword, PermissionDenied {
-		System.out.println(username+password+nickname+role.name()+(approved ? 1 : 0)+cardNumber+expirationDate+cvv);
+		System.out.println("Line 236 serveruserMnager" + username+password+nickname+role.name()+(approved ? 1 : 0)+cardNumber+expirationDate+cvv);
 	
 		String query = "INSERT INTO " + TABLE_NAME + " VALUES (" + "'" + username + "', " + "'" + password + "', " + "'"
 				+ nickname + "', " + "'" + shopname.name() +  "', " + "'" + role.name() + "', " + (approved ? 1 : 0) 
-				+ ", " + "'" + cardNumber + "', " + "'" + expirationDate + "', " + "'" + cvv + "', " + "'" + (logInfo ? 1 : 0) + "');";
+				+ ", " + "'" + cardNumber + "', " + "'" + expirationDate + "', " + "'" + cvv + "', " + "'" + (logInfo ? 1 : 0) + "', " + "'" + userWallet + "');";
 		
 		try {
 			runUpdate(connection, query);

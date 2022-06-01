@@ -220,14 +220,12 @@ public class DBManager {
 	
 	public boolean userLoggedIn(User user) {
 		if(user == null || user.userrole == null ) {
-			System.out.println("222 DBManager " + user);
 			return false;}
 		
 		if(loggedInUsers.contains(user.username)) {
-			System.out.println("226 DBManager " + user.username);
 			return true;}
 		
-		System.out.println("229 DBManager " + loggedInUsers.contains(user.username) +" " + user.username);
+	
 		return false;
 	}
 
