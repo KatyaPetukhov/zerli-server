@@ -8,7 +8,6 @@ import common.Role;
 import common.interfaces.UserManager.PermissionDenied;
 import common.interfaces.UserManager.WeakPassword;
 import common.request_data.ImageFile;
-import common.request_data.Order;
 import common.request_data.Product;
 import common.request_data.Shop;
 import common.request_data.User;
@@ -34,8 +33,6 @@ public class InitializeDB {
 		addComplaints(connection);
 		addOrderTable(connection);
 		addSurveys(connection);
-		// addOrders(connection);
-		// addReports(connection);
 	}
 
 	private void createDatabase(DBManager model) {
@@ -70,39 +67,6 @@ public class InitializeDB {
 //			e.printStackTrace();
 //		}
 //	}
-	private void addComplaints(Connection connection) {
-		User worker = new User();
-		worker.userrole = Role.WORKER;
-		try {
-			ServerUserManager.resetComplaints(connection);
-			ServerUserManager userManager = new ServerUserManager(worker, connection);
-			userManager.addNewCompliant("Jessica", "123", "ugly flowers", "08.06.22", "100", "Awaiting response",
-					"Aaron", "0");
-			userManager.addNewCompliant("Yarden", "234", "dry boquet", "30.05.22", "50", "Awaiting response", "Aaron",
-					"0");
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-
-	private void addSurveys(Connection connection) {
-		User worker = new User();
-		worker.userrole = Role.WORKER;
-		try {
-			ServerUserManager.resetSurvey(connection);
-			ServerUserManager userManager = new ServerUserManager(worker, connection);
-			userManager.setSurveyAnswers(1,2, 1, 4, 3, 7, "Shop survey", "HAIFA", "2022/05");
-//			userManager.setSurveyAnswers(0, 0, 0, 0, 0, 0, "1", "2", "3");
-//			userManager.setSurveyAnswers(0, 0, 0, 0, 0, 0, "1", "2", "3");
-//			userManager.setSurveyAnswers(0, 0, 0, 0, 0, 0, "1", "2", "3");
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-
-	private void addOrderTable(Connection connection) {
-		ServerOrderManager.resetOrders(connection);
-	}
 
 	private void addUsers(Connection connection) throws SQLIntegrityConstraintViolationException {
 		User manager = new User();
@@ -112,7 +76,7 @@ public class InitializeDB {
 			System.out.println("intzlie DB line 97");
 			ServerUserManager userManager = new ServerUserManager(manager, connection);
 
-			userManager.addNewUser("u", "u", "Katya", Shop.NONE, Role.GUEST, false, "1111222233334444", "18/7/2023",
+			userManager.addNewUser("u", "u", "Katya", Shop.ALL, Role.GUEST, false, "1111222233334444", "18/7/2023",
 					"132", false);
 			userManager.addNewUser("o", "o", "Jessika", Shop.ALL, Role.OWNER, true, null, null, null, false);
 			userManager.addNewUser("m", "m", "Niv", Shop.HAIFA, Role.MANAGER, true, null, null, null, false);
@@ -165,19 +129,55 @@ public class InitializeDB {
 
 	}
 
-	private void addUserTable(Connection connection) {
-		ServerUserManager.resetUsers(connection);
-		addOrders(connection);
+	private void addOrderTable(Connection connection) {
+		ServerOrderManager.resetOrders(connection);
 	}
 
+	// Doesn't work - to check
 	private void addOrders(Connection connection) {
 		User manager = new User();
 		manager.userrole = Role.CUSTOMER;
-		ServerOrderManager serverOrderManager = new ServerOrderManager(manager, connection);
-		Order order = new Order();
-		order.orderNumber = "111";
-		order.username = "Jess";
-		serverOrderManager.submitOrder(order);
+		try {
+			ServerOrderManager serverOrderManager = new ServerOrderManager(manager, connection);
+			// Order order = new Order("111", "dana", null, null, null, null, 0, null, null,
+			// null, null, null, null, null,
+			// null, null, null);
+			// serverOrderManager.submitOrder(order);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	private void addComplaints(Connection connection) {
+		User worker = new User();
+		worker.userrole = Role.WORKER;
+		try {
+			ServerUserManager.resetComplaints(connection);
+			ServerUserManager userManager = new ServerUserManager(worker, connection);
+			// userManager.addNewCompliant("Jessica", "123", "ugly flowers", "08.06.22",
+			// "100", "Awaiting response",
+			// "Aaron", "0");
+			// userManager.addNewCompliant("Yarden", "234", "dry boquet", "30.05.22", "50",
+			// "Awaiting response", "Aaron",
+			// "0");
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	private void addSurveys(Connection connection) {
+		User worker = new User();
+		worker.userrole = Role.WORKER;
+		try {
+			ServerUserManager.resetSurvey(connection);
+			ServerUserManager userManager = new ServerUserManager(worker, connection);
+			userManager.setSurveyAnswers(1, 2, 1, 4, 3, 7, "Sales survey", "HAIFA", "2022/04");
+//			userManager.setSurveyAnswers(0, 0, 0, 0, 0, 0, "1", "2", "3");
+//			userManager.setSurveyAnswers(0, 0, 0, 0, 0, 0, "1", "2", "3");
+//			userManager.setSurveyAnswers(0, 0, 0, 0, 0, 0, "1", "2", "3");
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 
 }

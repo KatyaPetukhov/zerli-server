@@ -7,12 +7,16 @@ import java.util.ArrayList;
 
 import common.Request;
 import common.RequestType;
+import common.interfaces.CartManager;
 import common.interfaces.UserManager.PermissionDenied;
 import common.interfaces.UserManager.WeakPassword;
+import common.request_data.AnalyseSurvey;
 import common.request_data.CategoriesList;
+import common.request_data.Complaint;
 import common.request_data.ComplaintList;
 import common.request_data.Order;
 import common.request_data.OrderList;
+import common.request_data.Product;
 //import common.request_data.IncomeReport;
 import common.request_data.ProductList;
 import common.request_data.Refund;
@@ -117,6 +121,33 @@ public class EchoServer extends AbstractServer {
 		case GET_PRODUCTS:
 			request = handleGetProducts(request);
 			break;
+		case GET_PRODUCT:
+			request = handleGetProduct(request);
+			break;
+		case ADD_ORDER:
+			try {
+				request = handleAddOrder(request);
+			} catch (InstantiationException | IllegalAccessException | ClassNotFoundException | SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			break;
+		case GET_ORDERS:
+			request = handleGetOrders(request);
+			break;
+		case GET_COMPLAINT:
+			try {
+				request = handleNewComplaint(request);
+			} catch (InstantiationException e1) {
+				e1.printStackTrace();
+			} catch (IllegalAccessException e1) {
+				e1.printStackTrace();
+			} catch (ClassNotFoundException e1) {
+				e1.printStackTrace();
+			} catch (SQLException e1) {
+				e1.printStackTrace();
+			}
+			break;
 		case GET_ALL_COMPLAINTS:
 			try {
 				request = handleGetComplaints(request);
@@ -156,13 +187,6 @@ public class EchoServer extends AbstractServer {
 				e.printStackTrace();
 			}
 			break;
-		case ADD_ORDER:
-			try {
-				request = handleAddOrder(request);
-			} catch (InstantiationException | IllegalAccessException | ClassNotFoundException | SQLException e) {
-				e.printStackTrace();
-			}
-			break;
 		case GET_ANSWERS_SURVEY:
 			try {
 				request = handleSurveyAnswers(request);
@@ -176,13 +200,65 @@ public class EchoServer extends AbstractServer {
 				e.printStackTrace();
 			}
 			break;
+		case GET_ANALYSE_SURVEY:
+			request = handleSurveyAnalyse(request);
+			break;
 		default:
 			request.requestType = RequestType.REQUEST_FAILED;
 			request.data = new ServerError("Unsupporter reuqest.").toJson();
 			break;
 		}
-
 		respond(client, request);
+	}
+
+	private Request handleGetOrders(Request request) {
+		OrderList orders = OrderList.fromJson(request.data);
+		orders = manager.getOrderManager(request.user).getOrders(orders.username);
+		if (orders == null) {
+			System.out.println("Incorrect request.");
+			request.data = null;
+		} else {
+			request.data = orders.toJson();
+		}
+		return request;
+	}
+
+	private Request handleGetProducts(Request request) {
+		/*
+		 * requestType.GET_PRODUCTS
+		 */
+		ProductList productList = ProductList.fromJson(request.data);
+		productList = manager.getProductManager(request.user).getProducts(productList.category);
+		request.data = productList.toJson();
+		return request;
+	}
+
+	private Request handleGetProduct(Request request) {
+		/*
+		 * requestType.GET_PRODUCT
+		 */
+		Product product = Product.fromJson(request.data);
+		product = manager.getProductManager(request.user).getProduct(product.name);
+		if (product == null) {
+			System.out.println("Incorrect request.");
+			request.data = null;
+		} else {
+			request.data = product.toJson();
+		}
+
+		return request;
+	}
+
+	private Request handleSurveyAnalyse(Request request) {
+		AnalyseSurvey analyseSurvey = AnalyseSurvey.fromJson(request.data);
+		Survey survey = manager.analyseTypeSurvey(analyseSurvey.syrveyType, analyseSurvey.shopName, analyseSurvey.date);
+		if (survey == null) {
+			request.requestType = RequestType.REQUEST_FAILED;
+			request.data = new ServerError("Could not take from survey reuqest.").toJson();
+			return request;
+		}
+		request.data = survey.toJson();
+		return request;
 	}
 
 	// NEED-TO-CHECK
@@ -194,6 +270,21 @@ public class EchoServer extends AbstractServer {
 				surveyRequest.getQuestion3(), surveyRequest.getQuestion4(), surveyRequest.getQuestion5(),
 				surveyRequest.getQuestion6(), surveyRequest.getType(), surveyRequest.getShopName(),
 				surveyRequest.getDate()))
+			request.data = null;
+		else {
+			request.requestType = RequestType.REQUEST_FAILED;
+			request.data = new ServerError("Request failed in DB.").toJson();
+		}
+		return request;
+	}
+//prbolem - how to take the currect name of Aaron. ask katya/yohan
+	private Request handleNewComplaint(Request request)
+			throws InstantiationException, IllegalAccessException, ClassNotFoundException, SQLException {
+		Complaint complaintRequest = Complaint.fromJson(request.data);
+		System.out.println("Echo handle complaint " + complaintRequest.userName);
+		if (manager.addNewCompliant(complaintRequest.userName, complaintRequest.orderId, complaintRequest.complaint,
+				complaintRequest.date, complaintRequest.price, complaintRequest.complaintStatus, "Aaron",
+				complaintRequest.refund))
 			request.data = null;
 		else {
 			request.requestType = RequestType.REQUEST_FAILED;
@@ -317,22 +408,13 @@ public class EchoServer extends AbstractServer {
 		return request;
 	}
 
-	private Request handleGetProducts(Request request) {
-		/*
-		 * requestType.GET_PRODUCTS
-		 */
-		ProductList productList = ProductList.fromJson(request.data);
-		productList = manager.getProductManager(request.user).getProducts(productList.category);
-		request.data = productList.toJson();
-		return request;
-	}
-
-	// DELETE
 	private Request handleAddOrder(Request request)
 			throws InstantiationException, IllegalAccessException, ClassNotFoundException, SQLException {
-		ServerOrderManager cartManager;
-		cartManager = new ServerOrderManager(request.user, manager.getConnection());
+		CartManager cartManager;
+		cartManager = new ServerCartManager(request.user, manager.getConnection());
+		System.out.println("TESTINGGGG");
 		Order order = Order.fromJson(request.data);
+		System.out.println("GOT + " + order.address);
 		order = cartManager.submitOrder(order);
 
 		if (order == null) {

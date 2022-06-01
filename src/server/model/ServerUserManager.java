@@ -3,15 +3,15 @@ package server.model;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.ArrayList;
 import java.util.List;
 
 import common.Role;
-import common.request_data.Shop;
 import common.interfaces.UserManager;
 import common.request_data.Complaint;
 import common.request_data.ComplaintList;
+import common.request_data.Shop;
+import common.request_data.Survey;
 import common.request_data.User;
 
 public class ServerUserManager extends BaseSQL implements UserManager {
@@ -110,22 +110,6 @@ public class ServerUserManager extends BaseSQL implements UserManager {
 		query = "CREATE TABLE complaints (" + USERNAME + VARCHAR + ", orderId" + VARCHAR + ", " + "complaint" + VARCHAR
 				+ ", " + "date" + VARCHAR + ", " + "price" + VARCHAR + ", complaintStatus" + VARCHAR + ", supportName"
 				+ VARCHAR + ", refund" + VARCHAR + ", PRIMARY KEY ( orderId));";
-		try {
-			runUpdate(connection, query);
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-	}
-
-	public static void resetOrders(Connection connection) {
-		String query = "DROP TABLE IF EXISTS orders;";
-		try {
-			runUpdate(connection, query);
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-		query = "CREATE TABLE orders (" + USERNAME + VARCHAR + ", OrderID" + VARCHAR + ", " + APPROVED + VARCHAR
-				+ ", PRIMARY KEY (" + USERNAME + "));";
 		try {
 			runUpdate(connection, query);
 		} catch (SQLException e) {
@@ -347,8 +331,8 @@ public class ServerUserManager extends BaseSQL implements UserManager {
 	}
 
 	@Override
-	public boolean setSurveyAnswers(int q1, int q2, int q3, int q4, int q5, int q6, String type, String shopName,
-			String date) {
+	public boolean setSurveyAnswers(double q1, double q2, double q3, double q4, double q5, double q6, String type,
+			String shopName, String date) {
 		int zero = 0;
 		String query = "INSERT INTO surveys VALUES (" + "'" + zero + "', " + "'" + q1 + "', " + "'" + q2 + "', " + "'"
 				+ q3 + "', " + "'" + q4 + "', " + "'" + q5 + "', '" + q6 + "', '" + type + "', " + "'" + shopName
@@ -363,8 +347,76 @@ public class ServerUserManager extends BaseSQL implements UserManager {
 	}
 
 	@Override
-	public boolean getMonthAvarge() {
+	public Survey analyseTypeSurvey(String surveyType, String shopName, String date) {
+		switch (surveyType) {
+		case "Monthly survey": {
+			String query = "SELECT AVG(q1) AS 'ANSq1',AVG(q2) AS 'ANS2q2', AVG(q3) AS 'ANSq3',AVG(q4) AS 'ANS2q4', AVG(q5) AS 'ANSq5', AVG(q6) AS 'ANS2q6' "
+					+ "FROM surveys WHERE date='" + date + "' and type='" + surveyType + "';";
+			Survey survey = new Survey();
+			try {
+				ResultSet rs = runQuery(connection, query);
+				while (rs.next()) { // for lines
+					survey.setType("surveyType");
+					survey.setDate(date);
+					survey.q1 = Double.parseDouble(rs.getString("ANSq1"));
+					survey.q2 = Double.parseDouble(rs.getString("ANS2q2"));
+					survey.q3 = Double.parseDouble(rs.getString("ANSq3"));
+					survey.q4 = Double.parseDouble(rs.getString("ANS2q4"));
+					survey.q5 = Double.parseDouble(rs.getString("ANSq5"));
+					survey.q6 = Double.parseDouble(rs.getString("ANS2q6"));
+				}
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+			return survey;
+		}
+		case "Sales survey": {
+			String query = "SELECT AVG(q1) AS 'ANSq1',AVG(q2) AS 'ANS2q2', AVG(q3) AS 'ANSq3',AVG(q4) AS 'ANS2q4', AVG(q5) AS 'ANSq5', AVG(q6) AS 'ANS2q6' "
+					+ "FROM surveys WHERE type='" + surveyType + "';";
+			Survey survey = new Survey();
+			try {
+				ResultSet rs = runQuery(connection, query);
+				while (rs.next()) { // for lines
+					survey.setType("surveyType");
+					survey.q1 = Double.parseDouble(rs.getString("ANSq1"));
+					survey.q2 = Double.parseDouble(rs.getString("ANS2q2"));
+					survey.q3 = Double.parseDouble(rs.getString("ANSq3"));
+					survey.q4 = Double.parseDouble(rs.getString("ANS2q4"));
+					survey.q5 = Double.parseDouble(rs.getString("ANSq5"));
+					survey.q6 = Double.parseDouble(rs.getString("ANS2q6"));
+				}
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+			return survey;
 
+		}
+		case "Shop survey": {
+			String query = "SELECT AVG(q1) AS 'ANSq1',AVG(q2) AS 'ANS2q2', AVG(q3) AS 'ANSq3',AVG(q4) AS 'ANS2q4', AVG(q5) AS 'ANSq5', AVG(q6) AS 'ANS2q6' "
+					+ "FROM surveys WHERE shopName='" + shopName + "' and type='" + surveyType + "';";
+			Survey survey = new Survey();
+			try {
+				ResultSet rs = runQuery(connection, query);
+				while (rs.next()) { // for lines
+					survey.setType("surveyType");
+					survey.setShopName(shopName);
+					survey.q1 = Double.parseDouble(rs.getString("ANSq1"));
+					survey.q2 = Double.parseDouble(rs.getString("ANS2q2"));
+					survey.q3 = Double.parseDouble(rs.getString("ANSq3"));
+					survey.q4 = Double.parseDouble(rs.getString("ANS2q4"));
+					survey.q5 = Double.parseDouble(rs.getString("ANSq5"));
+					survey.q6 = Double.parseDouble(rs.getString("ANS2q6"));
+				}
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+			return survey;
+		}
+		default:
+			break;
+		}
+		return null;
+	}
 //SELECT AVG(q1) AS 'ANSq1', avg(q2) AS 'ANS2q2', AVG(q3) AS 'ANSq3', avg(q4) AS 'ANS2q4', AVG(q5) AS 'ANSq5', avg(q6) AS 'ANS2q6'
 //FROM surveys
 //WHERE  shopName='HAIFA' and  surveyType='Shop survey' 
@@ -373,7 +425,7 @@ public class ServerUserManager extends BaseSQL implements UserManager {
 //		FROM surveys
 //		WHERE  type='sale' 
 
-	}
+}
 //
 //		ComplaintList complaintList = new ComplaintList();
 //		complaintList.complaints = new ArrayList<Complaint>();
@@ -395,5 +447,3 @@ public class ServerUserManager extends BaseSQL implements UserManager {
 //			e.printStackTrace();
 //		}
 //		return complaintList;	}
-
-}

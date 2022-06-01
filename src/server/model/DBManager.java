@@ -6,6 +6,8 @@ import java.sql.SQLException;
 
 import common.Role;
 import common.request_data.Shop;
+import common.request_data.Survey;
+import common.interfaces.CartManager;
 import common.interfaces.OrderManager;
 import common.interfaces.ProductManager;
 import common.interfaces.UserManager;
@@ -48,7 +50,7 @@ public class DBManager {
 		guestUser = new User(Role.GUEST.toString(), null);
 		guestUser.nickname = Role.GUEST.toString();
 		guestUser.userrole = Role.GUEST;
-		guestUser.shopname = Shop.NONE;
+		guestUser.shopname = Shop.ALL;
 		guestUser.approved = true;
 	}
 
@@ -139,6 +141,16 @@ public class DBManager {
 		return null;
 	}
 
+	public CartManager getCartManager(User requestedBy) {
+		try {
+			return new ServerCartManager(requestedBy, getConnection());
+		} catch (InstantiationException | IllegalAccessException | ClassNotFoundException | SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;
+	}
+
 	public OrderManager getOrderManager(User requestedBy) {
 		try {
 			return new ServerOrderManager(requestedBy, getConnection());
@@ -157,5 +169,17 @@ public class DBManager {
 	public boolean logInUser(User user) {
 		// TODO Auto-generated method stub
 		return getUserManager(null).logInUser(user);
+	}
+
+	public Survey analyseTypeSurvey(String syrveyType, String shopName, String date) {
+		return getUserManager(null).analyseTypeSurvey(syrveyType, shopName, date);
+	}
+
+	public boolean addNewCompliant(String userName2, String orderId, String complaint, String date, String price,
+			String complaintStatus, String username3, String refund) {
+		System.out.println(
+				"DB managerr" + userName2 + orderId + complaint + date + price + complaintStatus + username3 + refund);
+		return getUserManager(null).addNewCompliant(userName2, orderId, complaint, date, price, complaintStatus,
+				username3, refund);
 	}
 }
