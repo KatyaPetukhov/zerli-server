@@ -9,6 +9,7 @@ import common.interfaces.ProductManager;
 import common.request_data.Order;
 import common.request_data.Product;
 import common.request_data.ProductList;
+import common.request_data.ProductListCart;
 import common.request_data.User;
 
 public class ServerCartManager extends BaseSQL implements CartManager{
@@ -83,12 +84,12 @@ public class ServerCartManager extends BaseSQL implements CartManager{
 		
 	}
 	//Checking if the price is right according to database product's prices
-	private double checkTotalPrice( ProductList products) throws SQLException {
+	private double checkTotalPrice( ProductListCart products) throws SQLException {
 		Double priceToCheck = 0.0;
-		for ( Product p: products.items) {
+		for ( String p: products.items.keySet()) {
 			ProductManager productManager = new ServerProductManager(requestedBy,connection);			
 			Product toCheck = new Product();
-			toCheck = productManager.getProduct(p.name);
+			toCheck = productManager.getProduct(p);
 			priceToCheck+=toCheck.price;
 			}
 			

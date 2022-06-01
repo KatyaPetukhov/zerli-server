@@ -11,6 +11,7 @@ import common.request_data.OrderList;
 import common.request_data.OrderStatus;
 import common.request_data.OrderType;
 import common.request_data.ProductList;
+import common.request_data.ProductListCart;
 import common.request_data.Shop;
 import common.request_data.User;
 
@@ -99,7 +100,7 @@ public class ServerOrderManager extends BaseSQL implements OrderManager {
 				order.shop = Shop.fromString(rs.getString(SHOP));
 				order.recipient = rs.getString(RECIPIENT);
 				String productsJson = rs.getString(PRODUCTS);
-				order.products = ProductList.fromJson(productsJson);
+				order.products = ProductListCart.fromJson(productsJson);
 				order.greetingMessage = rs.getString(GREETING);
 				order.phone = rs.getString(DELIVERYPHONE);
 				order.paymentPhone = rs.getString(PAYMENTPHONE);

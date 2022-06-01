@@ -233,6 +233,7 @@ public class EchoServer extends AbstractServer {
 	private Request handleAddOrder(Request request) throws InstantiationException, IllegalAccessException, ClassNotFoundException, SQLException {
 		CartManager cartManager;
 		cartManager = new ServerCartManager(request.user, manager.getConnection());
+		System.out.println("TESTINGGGG");
 		Order order = Order.fromJson(request.data);
 		System.out.println("GOT + " + order.address);
 		order = cartManager.submitOrder(order);
