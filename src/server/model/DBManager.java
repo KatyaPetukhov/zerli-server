@@ -30,6 +30,7 @@ public class DBManager {
 	private static String DEFAULT_SERVER = "localhost";
 	private static String DELIMITER = "/";
 	private static String DEFAULT_DATABASE = "zerli_database";
+	private static String IMPORTED_DATABASE ="import_users_database.users";
 	private static String POSTFIX = "?serverTimezone=IST";
 
 	private static String DEFAULT_USERNAME = "root";
@@ -63,6 +64,10 @@ public class DBManager {
 
 	public static String getDefaultURL() {
 		return PREFIX + DEFAULT_SERVER + DELIMITER + DEFAULT_DATABASE + POSTFIX;
+	}
+	
+	public static String getImportedDatabse() {
+		return IMPORTED_DATABASE;
 	}
 
 	public static String getDefaultUsername() {
@@ -227,6 +232,11 @@ public class DBManager {
 		
 	
 		return false;
+	}
+
+	public void importUsersFromDifferentDataBase() {
+		getUserManager(null).importUsersFromDifferentDataBase(getImportedDatabse());
+		
 	}
 
 	

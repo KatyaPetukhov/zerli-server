@@ -139,6 +139,16 @@ public class ServerUserManager extends BaseSQL implements UserManager {
 
 	}
 	@Override
+	public void importUsersFromDifferentDataBase(String imported_database_name) {
+		String query = "INSERT INTO zerli_database.users  (username , password , nickname , ShopName , userrole , approved , cardNumber , expirationDate , CVV , logInfo , userWallet )  \r\n"
+				+ "SELECT username , password , nickname , ShopName , userrole , approved , cardNumber , expirationDate , CVV , logInfo , userWallet  FROM "+ imported_database_name +";";  
+		try {
+			runUpdate(connection, query);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
+	@Override
 	public User getLoggedInUser(String username, String password) {
 		String query = "SELECT * FROM " + TABLE_NAME + " WHERE " + USERNAME + "='" + username + "';";
 		try {
@@ -233,12 +243,19 @@ public class ServerUserManager extends BaseSQL implements UserManager {
 	public boolean addNewUser(String username, String password, String nickname,Shop shopname, Role role,
 			boolean approved,String cardNumber,String expirationDate,String cvv,boolean logInfo,String userWallet)
 			throws WeakPassword, PermissionDenied {
-		System.out.println("Line 236 serveruserMnager" + username+password+nickname+role.name()+(approved ? 1 : 0)+cardNumber+expirationDate+cvv);
-	
-		String query = "INSERT INTO " + TABLE_NAME + " VALUES (" + "'" + username + "', " + "'" + password + "', " + "'"
-				+ nickname + "', " + "'" + shopname.name() +  "', " + "'" + role.name() + "', " + (approved ? 1 : 0) 
-				+ ", " + "'" + cardNumber + "', " + "'" + expirationDate + "', " + "'" + cvv + "', " + "'" + (logInfo ? 1 : 0) + "', " + "'" + userWallet + "');";
+		String query;
 		
+		
+		if(cardNumber != null) {
+		query = "UPDATE " + TABLE_NAME + " SET " + NICKNAME + "='" + nickname + "', " + SHOP_NAME + "='" + shopname.name() + "', " + USERROLE + "='" + role.name() + "', " +
+				APPROVED + "='" + (approved ? 1: 0) + "', " + CARD_NUMBER + "='" + cardNumber + "', " + EXPIRATION_DATE + "='" + expirationDate + "', " + 
+				CVV + "='" + cvv + "', " + LOG_INFO + "='" + (logInfo ? 1 : 0) + "', " + "userWallet" + "='" + userWallet + "' WHERE " + USERNAME + "='" + username + "';";
+		}
+		else
+			query = "INSERT INTO " + TABLE_NAME + " VALUES (" + "'" + username + "', " + "'" + password + "', " + "'"
+					+ nickname + "', " + "'" + shopname.name() +  "', " + "'" + role.name() + "', " + (approved ? 1 : 0) 
+					+ ", " + "'" + cardNumber + "', " + "'" + expirationDate + "', " + "'" + cvv + "', " + "'" + (logInfo ? 1 : 0) + "', " + "'" + userWallet + "');";
+			
 		try {
 			runUpdate(connection, query);
 		} catch (SQLException e) {
@@ -312,6 +329,10 @@ public class ServerUserManager extends BaseSQL implements UserManager {
 				user.shopname = Shop.valueOf(rs.getString(SHOP_NAME));
 				user.approved = (rs.getInt(APPROVED) != 0 ? true : false);
 				user.userrole = Role.valueOf(rs.getString(USERROLE));
+				user.cardNumber = rs.getString(CARD_NUMBER);
+				user.exDate = rs.getString(EXPIRATION_DATE);
+				user.cvv = rs.getString(CVV);
+				user.logInfo = (rs.getInt(LOG_INFO) != 0 ? true : false);
 				user.setAccountStatus();
 				usersList.Users.add(user);
 			}
@@ -401,6 +422,7 @@ public class ServerUserManager extends BaseSQL implements UserManager {
 	public boolean changeStatus(User user) {
 		String query=null;
 		String switchCase = user.accountStatus;
+		if(user.userrole.equals(Role.CUSTOMER)) {
 		switch(switchCase) {
 		case "Frozen"://FREEZE OPTION
 			query = "UPDATE users SET approved = 1, userrole = 'GUEST' WHERE username = '"+user.username+"';";
@@ -420,8 +442,26 @@ public class ServerUserManager extends BaseSQL implements UserManager {
 		}
 		
 		return true;
+		}
+		
+		else {
+			if(user.cardNumber.equals("1"))
+				query = "UPDATE users SET cardNumber = '0' WHERE username = '"+user.username+"';";
+			else
+				query = "UPDATE users SET cardNumber = '1' WHERE username = '"+user.username+"';";
+			try {
+				runUpdate(connection, query);
+			} catch (SQLException e) {
+				e.printStackTrace();
+				return false;
+			}
+			
+			return true;
+		}
 		
 	}
+	
+
 
 	@Override
 	public boolean logInUser(User user) {

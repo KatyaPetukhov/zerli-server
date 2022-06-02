@@ -30,6 +30,10 @@ public class ServerManager {
 		manager = new DBManager(serverURL, username, password);
 		startServer();
 	}
+	
+	public DBManager getDBManager() {
+		return manager;
+	}
 
 	public boolean isServerRunning() {
 		return server != null && server.isListening();

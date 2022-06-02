@@ -13,6 +13,9 @@ import server.model.ServerManager;
 public class ServerController {
 	@FXML
 	private Button buttonConnect = null;
+	
+	@FXML
+	private Button buttonImport = null;
 
 	@FXML
 	private TextField portText = null;
@@ -49,6 +52,18 @@ public class ServerController {
 		urlText.setText(DBManager.getDefaultURL());
 		usernameText.setText(DBManager.getDefaultUsername());
 		passwordText.setText(DBManager.getDefaultPassword());
+	}
+	
+	public void onImport(ActionEvent event) {
+		if(!connected) {
+			serverMessage.setText("YOU MUST CONNECT FIRST");
+			return;
+		}
+		this.model.getDBManager().importUsersFromDifferentDataBase();
+		//buttonImport.setVisible(false);
+		//buttonImport.setText("Imported");
+		//buttonImport.setDisable(true);
+		
 	}
 
 	public void onConnect(ActionEvent event) throws Exception {

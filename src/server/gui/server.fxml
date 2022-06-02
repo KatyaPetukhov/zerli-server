@@ -11,7 +11,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Text?>
 
-<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" styleClass="header-section" xmlns="http://javafx.com/javafx/18" xmlns:fx="http://javafx.com/fxml/1" fx:controller="server.gui.ServerController">
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" styleClass="header-section" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="server.gui.ServerController">
    <children>
       <GridPane alignment="CENTER" layoutX="32.0" layoutY="72.0" prefHeight="400.0" prefWidth="600.0" styleClass="home" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
         <columnConstraints>
@@ -44,6 +44,7 @@
                <children>
                   <Button fx:id="buttonConnect" mnemonicParsing="false" onAction="#onConnect" text="Connect" />
                   <Button mnemonicParsing="false" onAction="#onDefault" text="Default" />
+                  <Button mnemonicParsing="false" onAction="#onImport" text="Import Users" />
                </children>
                <GridPane.margin>
                   <Insets left="-40.0" />

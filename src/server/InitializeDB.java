@@ -80,10 +80,10 @@ public class InitializeDB {
 			ServerUserManager userManager = new ServerUserManager(manager, connection);
 			// to USERS SQL: UserName,Password,Nickname,shopname,userRole,cardNumber,expirationDate,cvv,logInfo,userWallet
 			userManager.addNewUser("u", "u", "Katya",Shop.NONE, Role.GUEST, true,"1111222233334444","18-7-2023","132",false,"0");
-			userManager.addNewUser("o", "o", "Jessika",Shop.ALL, Role.OWNER, true,null,null,null,false,null);
+			userManager.addNewUser("o", "o", "Yarden",Shop.ALL, Role.OWNER, true,null,null,null,false,null);
 			userManager.addNewUser("m", "m", "Niv",Shop.HAIFA, Role.MANAGER, true,null,null,null,false,null);
-			userManager.addNewUser("w1", "w1", "Good one",Shop.HAIFA, Role.WORKER, true,"10",null,null,false,null);
-			userManager.addNewUser("w2", "w2", "Bad one",Shop.HAIFA, Role.WORKER, true,"0",null,null,false,null);
+			//userManager.addNewUser("w1", "w1", "Good one",Shop.HAIFA, Role.WORKER, true,"10",null,null,false,null);
+			//userManager.addNewUser("w2", "w2", "Bad one",Shop.HAIFA, Role.WORKER, true,"0",null,null,false,null);
 			userManager.addNewUser("s", "s", "Aaron",Shop.ALL, Role.SUPPORT, true,null,null,null,false,null);
 			userManager.addNewUser("d", "d", "Yagan",Shop.ALL, Role.DELIVERY, true,null,null,null,false,null);
 		} catch (WeakPassword | PermissionDenied e) {
@@ -200,31 +200,31 @@ public class InitializeDB {
 		userManager.addNewIncomeReport(Shop.HAIFA, "2021", "December", "1600", "Flowers", "13");
 		
 		// add reports NAHARIYA SHOP
-		userManager.addNewIncomeReport(Shop.NAHARIYA, "2020", "January", "5000", "Flowers", "40");
-		userManager.addNewIncomeReport(Shop.NAHARIYA, "2020", "February", "4760", "Flowers", "19");
-		userManager.addNewIncomeReport(Shop.NAHARIYA, "2020", "March", "6020", "Flowers", "35");
-		userManager.addNewIncomeReport(Shop.NAHARIYA, "2020", "April", "3000", "Flowers", "20");
-		userManager.addNewIncomeReport(Shop.NAHARIYA, "2020", "May", "1500", "Flowers", "11");
-		userManager.addNewIncomeReport(Shop.NAHARIYA, "2020", "June", "730", "Flowers", "6");
-		userManager.addNewIncomeReport(Shop.NAHARIYA, "2020", "July", "680", "Flowers", "4");
-		userManager.addNewIncomeReport(Shop.NAHARIYA, "2020", "August", "1356", "Flowers", "12");
-		userManager.addNewIncomeReport(Shop.NAHARIYA, "2020", "September", "2377", "Flowers", "15");
-		userManager.addNewIncomeReport(Shop.NAHARIYA, "2020", "October", "2985", "Flowers", "21");
-		userManager.addNewIncomeReport(Shop.NAHARIYA, "2020", "November", "5505", "Flowers", "45");
-		userManager.addNewIncomeReport(Shop.NAHARIYA, "2020", "December", "7300", "Flowers", "63");
+		userManager.addNewIncomeReport(Shop.NAHARIYA, "2020", "January", "2700", "Flowers", "40");
+		userManager.addNewIncomeReport(Shop.NAHARIYA, "2020", "February", "4200", "Flowers", "19");
+		userManager.addNewIncomeReport(Shop.NAHARIYA, "2020", "March", "8960", "Flowers", "35");
+		userManager.addNewIncomeReport(Shop.NAHARIYA, "2020", "April", "1600", "Flowers", "20");
+		userManager.addNewIncomeReport(Shop.NAHARIYA, "2020", "May", "720", "Flowers", "11");
+		userManager.addNewIncomeReport(Shop.NAHARIYA, "2020", "June", "1600", "Flowers", "6");
+		userManager.addNewIncomeReport(Shop.NAHARIYA, "2020", "July", "500", "Flowers", "4");
+		userManager.addNewIncomeReport(Shop.NAHARIYA, "2020", "August", "2800", "Flowers", "12");
+		userManager.addNewIncomeReport(Shop.NAHARIYA, "2020", "September", "1450", "Flowers", "15");
+		userManager.addNewIncomeReport(Shop.NAHARIYA, "2020", "October", "3270", "Flowers", "21");
+		userManager.addNewIncomeReport(Shop.NAHARIYA, "2020", "November", "6000", "Flowers", "45");
+		userManager.addNewIncomeReport(Shop.NAHARIYA, "2020", "December", "7000", "Flowers", "63");
 
-		userManager.addNewIncomeReport(Shop.NAHARIYA, "2021", "January", "3450", "Flowers", "22");
-		userManager.addNewIncomeReport(Shop.NAHARIYA, "2021", "February", "4530", "Flowers", "32");
-		userManager.addNewIncomeReport(Shop.NAHARIYA, "2021", "March", "8000", "Flowers", "60");
-		userManager.addNewIncomeReport(Shop.NAHARIYA, "2021", "April", "9210", "Flowers", "85");
-		userManager.addNewIncomeReport(Shop.NAHARIYA, "2021", "May", "5760", "Flowers", "46");
-		userManager.addNewIncomeReport(Shop.NAHARIYA, "2021", "June", "350", "Flowers", "4");
-		userManager.addNewIncomeReport(Shop.NAHARIYA, "2021", "July", "210", "Flowers", "2");
-		userManager.addNewIncomeReport(Shop.NAHARIYA, "2021", "August", "860", "Flowers", "7");
-		userManager.addNewIncomeReport(Shop.NAHARIYA, "2021", "September", "9780", "Flowers", "100");
-		userManager.addNewIncomeReport(Shop.NAHARIYA, "2021", "October", "1750", "Flowers", "9");
-		userManager.addNewIncomeReport(Shop.NAHARIYA, "2021", "November", "2800", "Flowers", "27");
-		userManager.addNewIncomeReport(Shop.NAHARIYA, "2021", "December", "1600", "Flowers", "13");
+		userManager.addNewIncomeReport(Shop.NAHARIYA, "2021", "January", "4530", "Flowers", "22");
+		userManager.addNewIncomeReport(Shop.NAHARIYA, "2021", "February", "3200", "Flowers", "32");
+		userManager.addNewIncomeReport(Shop.NAHARIYA, "2021", "March", "6000", "Flowers", "60");
+		userManager.addNewIncomeReport(Shop.NAHARIYA, "2021", "April", "8200", "Flowers", "85");
+		userManager.addNewIncomeReport(Shop.NAHARIYA, "2021", "May", "4000", "Flowers", "46");
+		userManager.addNewIncomeReport(Shop.NAHARIYA, "2021", "June", "720", "Flowers", "4");
+		userManager.addNewIncomeReport(Shop.NAHARIYA, "2021", "July", "900", "Flowers", "2");
+		userManager.addNewIncomeReport(Shop.NAHARIYA, "2021", "August", "570", "Flowers", "7");
+		userManager.addNewIncomeReport(Shop.NAHARIYA, "2021", "September", "10000", "Flowers", "100");
+		userManager.addNewIncomeReport(Shop.NAHARIYA, "2021", "October", "2500", "Flowers", "9");
+		userManager.addNewIncomeReport(Shop.NAHARIYA, "2021", "November", "1900", "Flowers", "27");
+		userManager.addNewIncomeReport(Shop.NAHARIYA, "2021", "December", "560", "Flowers", "13");
 		
 	}
 }

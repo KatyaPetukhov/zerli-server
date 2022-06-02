@@ -379,14 +379,21 @@ public class EchoServer extends AbstractServer {
 		 * requestType.ADD_USER
 		 */
 		User toAdd = User.fromJson(request.data);
+		User checkUser =manager.validateUser(toAdd);
 		
+		if(checkUser == null  || checkUser.cardNumber == null ) {
+			request.requestType = RequestType.REQUEST_FAILED;;
+			request.data = new ServerError("User name allready in dataBase").toJson();
+			return request;
+		}
 
 		try {
-			if (!manager.getUserManager(request.user).addNewUser(toAdd.username, toAdd.password, toAdd.nickname,toAdd.shopname,
+			if (manager.getUserManager(request.user).addNewUser(toAdd.username, toAdd.password, toAdd.nickname,toAdd.shopname,
 					toAdd.userrole, toAdd.approved,toAdd.cardNumber,toAdd.exDate,toAdd.cvv,toAdd.logInfo,toAdd.userWallet)) {
 				/* User already exists. */
-				request.requestType = RequestType.REQUEST_FAILED;
+				
 			}
+			else request.requestType = RequestType.REQUEST_FAILED;
 			request.data = null;
 		} catch (WeakPassword e) {
 			/* Bad password. */
@@ -399,7 +406,7 @@ public class EchoServer extends AbstractServer {
 		 catch (SQLIntegrityConstraintViolationException e1) {
 		e1.printStackTrace();	
 		request.requestType = RequestType.REQUEST_FAILED;;
-		request.data = new ServerError("User name allready in dataBase").toJson();
+		request.data = new ServerError("User name not in Database").toJson();
 		}
 		return request;
 	}
