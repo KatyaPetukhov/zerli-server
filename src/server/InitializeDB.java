@@ -32,25 +32,44 @@ public class InitializeDB {
 		}
 		
 		addProducts(connection);
+		addOrdersReports(connection);
 		addUsers(connection);
 		addOrderTable(connection);
-		addReports(connection);
+		addIncomeReports(connection);
 		addComplaints(connection);
 	}
 	
+
+
 	private void createDatabase(DBManager model) {
 		model.createDatabase();
 	}
 	
-	private void addReports(Connection connection) {
-		// TODO Auto-generated method stub
+	private void addOrdersReports(Connection connection) {
+		User manager = new User();
+		manager.userrole = Role.MANAGER;
+		try {
+			ServerUserManager.resetOrdersReports(connection);
+			ServerUserManager userManager = new ServerUserManager(manager, connection);
+
+			addOrdersReports(userManager);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+	}
+	
+
+
+	private void addIncomeReports(Connection connection) {
+		
 		User manager = new User();
 		manager.userrole = Role.MANAGER;
 		try {
 			ServerUserManager.resetIncomeReports(connection);
 			ServerUserManager userManager = new ServerUserManager(manager, connection);
 
-			addRports(userManager);
+			addIncomeReports(userManager);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -58,19 +77,7 @@ public class InitializeDB {
 	}
 
 
-	private void addOrders(Connection connection) {
-		// TODO Auto-generated method stub
-		User manager = new User();
-		manager.userrole = Role.CUSTOMER;
-		try {
-			ServerUserManager.resetOrders(connection);
-			ServerUserManager userManager = new ServerUserManager(manager, connection);
-
-			userManager.addNewOrder("u", "123", Shop.HAIFA, "Pendig approvel");
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
+	
 
 	private void addUsers(Connection connection) throws SQLIntegrityConstraintViolationException {
 		User manager = new User();
@@ -126,43 +133,44 @@ public class InitializeDB {
 	private void addProducts(Connection connection) throws PermissionDenied {
 		User support = new User();
 		support.userrole = Role.SUPPORT;
+
 		ServerProductManager.resetProducts(connection);
 		ServerProductManager productManager = new ServerProductManager(support, connection);
+
 		productManager.addProduct(new Product("Field Beauty", 40.0, 0, "Bouquet",
 				ImageFile.asEncodedString("./src/server/gallery/b1.jpg")));
-
-
+	
 		productManager.addProduct(new Product("Warm White", 60.0, 0, "Bouquet",
 				ImageFile.asEncodedString("./src/server/gallery/b2.jpg")));
-
+		
 		productManager.addProduct(new Product("Pink Spring", 55.0, 0, "Bouquet",
 				ImageFile.asEncodedString("./src/server/gallery/b3.jpg")));
-
+		
 		productManager.addProduct(
 				new Product("Cute Ball", 70.0, 0, "Bouquet", ImageFile.asEncodedString("./src/server/gallery/b4.jpg")));
-
+		
 		productManager.addProduct(new Product("High Ground", 85.0, 0, "Bouquet",
 				ImageFile.asEncodedString("./src/server/gallery/b5.jpg")));
-
+		
 		productManager.addProduct(
 				new Product("With Love", 65.0, 0, "Bouquet", ImageFile.asEncodedString("./src/server/gallery/b6.jpg")));
-
+		
 		productManager.addProduct(new Product("Happy moments", 200.0, 0, "Wedding",
 				ImageFile.asEncodedString("./src/server/gallery/w1.jpg")));
-
+		
 		productManager.addProduct(
 				new Product("Memories", 150.0, 0, "Funeral", ImageFile.asEncodedString("./src/server/gallery/f1.jpg")));
-
+		
 		productManager.addProduct(new Product("Pink Orchid", 120.0, 0, "Flowerpot",
 				ImageFile.asEncodedString("./src/server/gallery/p1.jpg")));
-
+		
 		productManager.addProduct(new Product("1m White Rose", 25.0, 0, "Retail",
 				ImageFile.asEncodedString("./src/server/gallery/r1.jpg")));
-
+		
 		productManager.addProduct(new Product("0.6m Red Rose", 10.0, 0, "Retail",
 				ImageFile.asEncodedString("./src/server/gallery/r2.jpg")));
 
-
+		
 
 	}
 
@@ -173,7 +181,7 @@ public class InitializeDB {
 	}
 	
 	
-	private void addRports(ServerUserManager userManager) throws SQLException {
+	private void addIncomeReports(ServerUserManager userManager) throws SQLException {
 		// add reports to HAIFA SHOP
 		userManager.addNewIncomeReport(Shop.HAIFA, "2020", "January", "5000", "Flowers", "40");
 		userManager.addNewIncomeReport(Shop.HAIFA, "2020", "February", "4760", "Flowers", "19");
@@ -229,4 +237,81 @@ public class InitializeDB {
 		userManager.addNewIncomeReport(Shop.NAHARIYA, "2021", "December", "560", "Flowers", "13");
 		
 	}
+	
+	private void addOrdersReports(ServerUserManager userManager) {
+		
+		userManager.addNewOrderReport(Shop.HAIFA, "2020", "January", "2", "6", "12", "13", "17", "0", "5", "7", "13", "9", "20","40");
+		userManager.addNewOrderReport(Shop.HAIFA, "2020", "February", "5", "8", "7", "16", "11", "21", "16", "17", "2", "31", "1","19");
+		userManager.addNewOrderReport(Shop.HAIFA, "2020", "March", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11","35");
+		userManager.addNewOrderReport(Shop.HAIFA, "2020", "April", "3", "2", "4", "3", "7", "8", "14", "10", "15", "1", "15","20");
+		userManager.addNewOrderReport(Shop.HAIFA, "2020", "May", "6", "4", "9", "2", "10", "17", "5", "13", "9", "13", "2","11");
+		userManager.addNewOrderReport(Shop.HAIFA, "2020", "June", "9", "8", "7", "6", "15", "4", "3", "2", "1", "0", "0","6");
+		userManager.addNewOrderReport(Shop.HAIFA, "2020", "July", "5", "8", "7", "16", "11", "21", "16", "17", "2", "31", "1","4");
+		userManager.addNewOrderReport(Shop.HAIFA, "2020", "August", "2", "6", "12", "13", "17", "0", "5", "7", "13", "9", "20","12");
+		userManager.addNewOrderReport(Shop.HAIFA, "2020", "September", "12", "12", "12", "12", "12", "12", "12", "12", "12", "12", "12","15");
+		userManager.addNewOrderReport(Shop.HAIFA, "2020", "October", "5", "8", "7", "16", "11", "21", "16", "17", "2", "31", "1","21");
+		userManager.addNewOrderReport(Shop.HAIFA, "2020", "November", "2", "6", "12", "13", "17", "0", "5", "7", "13", "9", "20","45");
+		userManager.addNewOrderReport(Shop.HAIFA, "2020", "December", "6", "4", "9", "2", "10", "17", "5", "13", "9", "13", "2","63");
+		
+		userManager.addNewOrderReport(Shop.HAIFA, "2021", "January", "12", "12", "12", "12", "12", "12", "12", "12", "12", "12", "12", "22");
+		userManager.addNewOrderReport(Shop.HAIFA, "2021", "February", "3", "2", "4", "3", "7", "8", "14", "10", "15", "1", "15", "32");
+		userManager.addNewOrderReport(Shop.HAIFA, "2021", "March", "5", "8", "7", "16", "11", "21", "16", "17", "2", "31", "1", "60");
+		userManager.addNewOrderReport(Shop.HAIFA, "2021", "April", "3", "2", "4", "3", "7", "8", "14", "10", "15", "1", "15", "85");
+		userManager.addNewOrderReport(Shop.HAIFA, "2021", "May", "9", "8", "7", "6", "15", "4", "3", "2", "1", "0", "0", "46");
+		userManager.addNewOrderReport(Shop.HAIFA, "2021", "June", "6", "4", "9", "2", "10", "17", "5", "13", "9", "13", "2", "4");
+		userManager.addNewOrderReport(Shop.HAIFA, "2021", "July", "6", "4", "9", "2", "10", "17", "5", "13", "9", "13", "2", "2");
+		userManager.addNewOrderReport(Shop.HAIFA, "2021", "August", "5", "8", "7", "16", "11", "21", "16", "17", "2", "31", "1", "7");
+		userManager.addNewOrderReport(Shop.HAIFA, "2021", "September", "9", "8", "7", "6", "15", "4", "3", "2", "1", "0", "0", "9");
+		userManager.addNewOrderReport(Shop.HAIFA, "2021", "October", "2", "6", "12", "13", "17", "0", "5", "7", "13", "9", "20", "9");
+		userManager.addNewOrderReport(Shop.HAIFA, "2021", "November", "3", "2", "4", "3", "7", "8", "14", "10", "15", "1", "15", "27");
+		userManager.addNewOrderReport(Shop.HAIFA, "2021", "December", "9", "8", "7", "6", "15", "4", "3", "2", "1", "0", "0", "13");
+		
+		
+		userManager.addNewOrderReport(Shop.HAIFA, "2022", "January", "6", "4", "9", "2", "10", "17", "5", "13", "9", "13", "2", "32");
+		userManager.addNewOrderReport(Shop.HAIFA, "2022", "February", "5", "8", "7", "16", "11", "21", "16", "17", "2", "31", "1", "85");
+		userManager.addNewOrderReport(Shop.HAIFA, "2022", "March", "3", "2", "4", "3", "7", "8", "14", "10", "15", "1", "15","19");
+		userManager.addNewOrderReport(Shop.HAIFA, "2022", "April", "2", "6", "12", "13", "17", "0", "5", "7", "13", "9", "20","21");
+		userManager.addNewOrderReport(Shop.HAIFA, "2022", "May", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "31");
+		
+		
+		
+		
+		userManager.addNewOrderReport(Shop.NAHARIYA, "2021", "January", "2", "6", "12", "13", "17", "0", "5", "7", "13", "9", "20","40");
+		userManager.addNewOrderReport(Shop.NAHARIYA, "2021", "February", "5", "8", "7", "16", "11", "21", "16", "17", "2", "31", "1","19");
+		userManager.addNewOrderReport(Shop.NAHARIYA, "2021", "March", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11","35");
+		userManager.addNewOrderReport(Shop.NAHARIYA, "2021", "April", "3", "2", "4", "3", "7", "8", "14", "10", "15", "1", "15","20");
+		userManager.addNewOrderReport(Shop.NAHARIYA, "2021", "May", "6", "4", "9", "2", "10", "17", "5", "13", "9", "13", "2","11");
+		userManager.addNewOrderReport(Shop.NAHARIYA, "2021", "June", "9", "8", "7", "6", "15", "4", "3", "2", "1", "0", "0","6");
+		userManager.addNewOrderReport(Shop.NAHARIYA, "2021", "July", "5", "8", "7", "16", "11", "21", "16", "17", "2", "31", "1","4");
+		userManager.addNewOrderReport(Shop.NAHARIYA, "2021", "August", "2", "6", "12", "13", "17", "0", "5", "7", "13", "9", "20","12");
+		userManager.addNewOrderReport(Shop.NAHARIYA, "2021", "September", "12", "12", "12", "12", "12", "12", "12", "12", "12", "12", "12","15");
+		userManager.addNewOrderReport(Shop.NAHARIYA, "2021", "October", "5", "8", "7", "16", "11", "21", "16", "17", "2", "31", "1","21");
+		userManager.addNewOrderReport(Shop.NAHARIYA, "2021", "November", "2", "6", "12", "13", "17", "0", "5", "7", "13", "9", "20","45");
+		userManager.addNewOrderReport(Shop.NAHARIYA, "2021", "December", "6", "4", "9", "2", "10", "17", "5", "13", "9", "13", "2","63");
+		
+		userManager.addNewOrderReport(Shop.NAHARIYA, "2020", "January", "12", "12", "12", "12", "12", "12", "12", "12", "12", "12", "12", "22");
+		userManager.addNewOrderReport(Shop.NAHARIYA, "2020", "February", "3", "2", "4", "3", "7", "8", "14", "10", "15", "1", "15", "32");
+		userManager.addNewOrderReport(Shop.NAHARIYA, "2020", "March", "5", "8", "7", "16", "11", "21", "16", "17", "2", "31", "1", "60");
+		userManager.addNewOrderReport(Shop.NAHARIYA, "2020", "April", "3", "2", "4", "3", "7", "8", "14", "10", "15", "1", "15", "85");
+		userManager.addNewOrderReport(Shop.NAHARIYA, "2020", "May", "9", "8", "7", "6", "15", "4", "3", "2", "1", "0", "0", "46");
+		userManager.addNewOrderReport(Shop.NAHARIYA, "2020", "June", "6", "4", "9", "2", "10", "17", "5", "13", "9", "13", "2", "4");
+		userManager.addNewOrderReport(Shop.NAHARIYA, "2020", "July", "6", "4", "9", "2", "10", "17", "5", "13", "9", "13", "2", "2");
+		userManager.addNewOrderReport(Shop.NAHARIYA, "2020", "August", "5", "8", "7", "16", "11", "21", "16", "17", "2", "31", "1", "7");
+		userManager.addNewOrderReport(Shop.NAHARIYA, "2020", "September", "9", "8", "7", "6", "15", "4", "3", "2", "1", "0", "0", "9");
+		userManager.addNewOrderReport(Shop.NAHARIYA, "2020", "October", "2", "6", "12", "13", "17", "0", "5", "7", "13", "9", "20", "9");
+		userManager.addNewOrderReport(Shop.NAHARIYA, "2020", "November", "3", "2", "4", "3", "7", "8", "14", "10", "15", "1", "15", "27");
+		userManager.addNewOrderReport(Shop.NAHARIYA, "2020", "December", "9", "8", "7", "6", "15", "4", "3", "2", "1", "0", "0", "13");
+		
+		
+		userManager.addNewOrderReport(Shop.NAHARIYA, "2022", "January", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "31");
+		userManager.addNewOrderReport(Shop.NAHARIYA, "2022", "February",  "2", "6", "12", "13", "17", "0", "5", "7", "13", "9", "20","21");
+		userManager.addNewOrderReport(Shop.NAHARIYA, "2022", "March", "3", "2", "4", "3", "7", "8", "14", "10", "15", "1", "15","19");
+		userManager.addNewOrderReport(Shop.NAHARIYA, "2022", "April", "5", "8", "7", "16", "11", "21", "16", "17", "2", "31", "1", "85");
+		userManager.addNewOrderReport(Shop.NAHARIYA, "2022", "May", "6", "4", "9", "2", "10", "17", "5", "13", "9", "13", "2", "32");
+		
+		
+		
+	}
+
+
 }

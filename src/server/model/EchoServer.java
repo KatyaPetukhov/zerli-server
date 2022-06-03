@@ -15,6 +15,7 @@ import common.request_data.CategoriesList;
 import common.request_data.ComplaintList;
 import common.request_data.Order;
 import common.request_data.OrderList;
+import common.request_data.OrderReport;
 import common.request_data.IncomeReport;
 import common.request_data.IncomeReportList;
 import common.request_data.ProductList;
@@ -192,7 +193,10 @@ public class EchoServer extends AbstractServer {
 		case CHANGE_STATUS:
 			request = handleChangeStatus(request);
 			break;
-			
+		
+		case GET_ORDER_REPORT:
+			request = handleGetOrderReport(request);
+			break;
 	
 		default:
 			request.requestType = RequestType.REQUEST_FAILED;
@@ -203,7 +207,9 @@ public class EchoServer extends AbstractServer {
 		respond(client, request);
 	}
 	
-	// NEED-TO-CHECK
+
+
+		// NEED-TO-CHECK
 		private Request handleSurveyAnswers(Request request)
 				throws InstantiationException, IllegalAccessException, ClassNotFoundException, SQLException {
 			Survey surveyRequest = Survey.fromJson(request.data);
@@ -299,6 +305,7 @@ public class EchoServer extends AbstractServer {
 		
 		if (incomeReportList == null) {
 			System.out.println("Incorrect request.");
+			request.requestType = RequestType.REQUEST_FAILED;
 			request.data = null;
 		} else {
 			request.data = incomeReportList.toJson();
@@ -321,6 +328,19 @@ public class EchoServer extends AbstractServer {
 		}
 		return request;
 		
+	}
+	
+	private Request handleGetOrderReport(Request request) {
+		OrderReport orderReport = OrderReport.fromJson(request.data);
+		orderReport = manager.getOrderReport(orderReport);
+		if (orderReport == null) {
+			System.out.println("Incorrect request.");
+			request.requestType = RequestType.REQUEST_FAILED;
+			request.data = null;
+		} else {
+			request.data = orderReport.toJson();
+		}
+		return request;
 	}
 
 	private void respond(ConnectionToClient client, Request request) {

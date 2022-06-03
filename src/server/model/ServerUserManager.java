@@ -13,7 +13,7 @@ import common.request_data.Complaint;
 import common.request_data.ComplaintList;
 import common.request_data.IncomeReport;
 import common.request_data.IncomeReportList;
-
+import common.request_data.OrderReport;
 import common.request_data.Shop;
 import common.request_data.User;
 import common.request_data.UsersList;
@@ -71,6 +71,8 @@ public class ServerUserManager extends BaseSQL implements UserManager {
 		return true;
 	}
 	
+	
+	
 	public static void resetSurvey(Connection connection) {
 		String query = "DROP TABLE IF EXISTS surveys;";
 		try {
@@ -122,22 +124,7 @@ public class ServerUserManager extends BaseSQL implements UserManager {
 		}
 	}
 	
-	public static void resetOrders(Connection connection) {
-		String query = "DROP TABLE IF EXISTS " + "orders" + ";";
-		try {
-			runUpdate(connection, query);
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-		query = "CREATE TABLE " + "orders" + " (" + USERNAME + VARCHAR + ", " + "OrderID" + VARCHAR + ", " + SHOP_NAME + VARCHAR + ", "+ APPROVED + VARCHAR + ", PRIMARY KEY (" + USERNAME
-				+ "));";
-		try {
-			runUpdate(connection, query);
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
 
-	}
 	@Override
 	public void importUsersFromDifferentDataBase(String imported_database_name) {
 		String query = "INSERT INTO zerli_database.users  (username , password , nickname , ShopName , userrole , approved , cardNumber , expirationDate , CVV , logInfo , userWallet )  \r\n"
@@ -177,6 +164,42 @@ public class ServerUserManager extends BaseSQL implements UserManager {
 		}
 		return null;
 	}
+	
+	public static void resetOrdersReports(Connection connection) {
+		String query = "DROP TABLE IF EXISTS " + "orders_reports" + ";"; //
+		try {
+			runUpdate(connection, query);
+		} catch (SQLException e) {
+			e.printStackTrace();
+			}
+		query = "CREATE TABLE " + "orders_reports" + " (" + SHOP_NAME + VARCHAR + ", " + "Year" + VARCHAR + ", " + "Month" + VARCHAR + ", "
+				+ "Field_Beauty" + VARCHAR +
+				", " + "Warm_White" + VARCHAR + ", " +"Pink_Spring" + VARCHAR + ", " + "Cute_Ball" + VARCHAR + 
+				", " + "High_Ground" + VARCHAR + ", " + "With_Love" + VARCHAR + 
+				", " + "Happy_moments" + VARCHAR + ", " + "Memories" + VARCHAR + ", " + "Pink_Orchid" + VARCHAR +
+				", " + "White_Rose" + VARCHAR + ", " + "Red_Rose" + VARCHAR +", " + "TotalNumberOfOrders" + VARCHAR + ");";
+		try {
+			runUpdate(connection, query);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public boolean addNewOrderReport(Shop shop,String year,String month,String Field_Beauty,String Warm_White,String Pink_Spring,String Cute_Ball,
+			String High_Ground,String With_Love,String Happy_moments,String Memories,String Pink_Orchid,String White_Rose,String Red_Rose,String TON) {
+		String query = "INSERT INTO " + "orders_reports" + " VALUES (" + "'" + shop.name() + "', " + "'" + year + "', " + "'"
+				+ month + "', " + "'" + Field_Beauty +  "', " + "'" + Warm_White + "', " + "'" + Pink_Spring + 
+				"', " + "'" + Cute_Ball + "', " + "'" + High_Ground + "', " + "'" + With_Love + "', " + "'" + Happy_moments + 
+				"', " + "'" + Memories + "', " + "'" +  Pink_Orchid + "', " + "'" +  White_Rose + "', "  + "'" + Red_Rose +  "', "  + "'" + TON + "');";
+		try {
+			runUpdate(connection, query);
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return false;
+		}
+		return true;
+	}
+
 	
 	public static void resetIncomeReports(Connection connection) {
 		String query = "DROP TABLE IF EXISTS " + "income_reports" + ";";
@@ -375,7 +398,7 @@ public class ServerUserManager extends BaseSQL implements UserManager {
 				incomeReport.income = rs.getString("Income");
 				incomeReport.bestSellingProduct = rs.getString("BestSellingProduct");
 				incomeReport.totalNumberOfOrders = rs.getString("TotalNumberOfOrders");
-				
+				incomeReportList.Reports.add(incomeReport);
 				
 		
 			
@@ -562,6 +585,44 @@ public class ServerUserManager extends BaseSQL implements UserManager {
 		// TODO Auto-generated method stub
 		return false;
 	}
+
+	@Override
+	public OrderReport getOrderReport(Shop shop, String year, String Month) {
+		OrderReport orderReport = new OrderReport();
+		
+		
+		//Get the report the user asked for
+		
+		String query = "SELECT * FROM orders_reports WHERE ShopName = '" + shop.name() + "' AND Year = '" + year + "' AND Month = '" + Month + "';";
+		try {
+			ResultSet rs = runQuery(connection, query);
+			while (rs.next()) {
+				
+				orderReport.shop = shop;
+				orderReport.year = year;
+				orderReport.month = Month;
+				orderReport.Cute_Ball = rs.getString("Cute_Ball");
+				orderReport.Field_Beauty = rs.getString("Field_Beauty");
+				orderReport.Warm_White = rs.getString("Warm_White");
+				orderReport.Happy_moments = rs.getString("Happy_moments");
+				orderReport.High_Ground = rs.getString("High_Ground");
+				orderReport.With_Love = rs.getString("With_Love");
+				orderReport.Memories = rs.getString("Memories");
+				orderReport.Pink_Orchid = rs.getString("Pink_Orchid");
+				orderReport.Pink_Spring = rs.getString("Pink_Spring");
+				orderReport.White_Rose = rs.getString("White_Rose");
+				orderReport.Red_Rose = rs.getString("Red_Rose");
+				orderReport.TON = rs.getString("TotalNumberOfOrders");
+				System.out.println("616 ServerSuerManager " + orderReport.TON);
+				
+	
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return orderReport;
+	}
+
 
 
 

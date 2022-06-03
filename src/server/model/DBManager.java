@@ -15,6 +15,7 @@ import common.interfaces.UserManager;
 import common.request_data.ComplaintList;
 import common.request_data.IncomeReport;
 import common.request_data.IncomeReportList;
+import common.request_data.OrderReport;
 import common.request_data.Shop;
 import common.request_data.User;
 import common.request_data.UsersList;
@@ -243,6 +244,11 @@ public class DBManager {
 	public ComplaintList getAllComplaints() {
 		// TODO Auto-generated method stub
 		return getUserManager(null).getAllComplaints();
+	}
+
+	public OrderReport getOrderReport(OrderReport orderReport) {
+		// TODO Auto-generated method stub
+		return getUserManager(null).getOrderReport(orderReport.shop, orderReport.year, orderReport.month);
 	}
 
 	
