@@ -31,12 +31,13 @@ public class InitializeDB {
 			return;
 		}
 		
-		addProducts(connection);
+		
 		addOrdersReports(connection);
 		addUsers(connection);
 		addOrderTable(connection);
 		addIncomeReports(connection);
 		addComplaints(connection);
+		addProducts(connection);
 	}
 	
 
@@ -172,11 +173,13 @@ public class InitializeDB {
 
 		
 
+	
+
 	}
 
 	private void addOrderTable(Connection connection) {
 
-		ServerProductManager.resetProducts(connection);
+		ServerOrderManager.resetOrders(connection);
 
 	}
 	

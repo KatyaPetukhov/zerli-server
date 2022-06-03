@@ -5,12 +5,16 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import common.interfaces.CartManager;
+import common.interfaces.ProductManager;
 import common.request_data.Order;
 import common.request_data.Product;
 import common.request_data.ProductList;
+import common.request_data.ProductListCart;
 import common.request_data.User;
 
 public class ServerCartManager extends BaseSQL implements CartManager{
+	
+	private static int orderNumber = 1 ;
 	
 	private static String TABLE_NAME = "orders";
 	private static String ORDER_NUMBER ="number";
@@ -51,45 +55,54 @@ public class ServerCartManager extends BaseSQL implements CartManager{
 	}
 	@Override
 	public Order submitOrder(Order order) {
-		
-		
+
 		try {
-			order.totalPrice=checkTotalPrice(order.products);
-		} catch (SQLException e) {
+			Double priceFromServer = checkTotalPrice(order.products);
+			order.totalPrice=priceFromServer;
+		} catch (SQLException e1) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+			e1.printStackTrace();
 		}
+		order.orderNumber=getNextOrderNumber();
 		
 		try {
 			String query = "INSERT INTO " + TABLE_NAME + " VALUES (" + "'" + order.orderNumber + "', " + "'" + order.username + "', " + "'"
 					+ order.date + "', " + "'" + order.hour + "', "+ "'" + order.products.toJson() +"', " + "'"
 					+ order.status + "', " + "'" + order.totalPrice + "', " + "'" + order.recipient +"', " + "'" + order.greetingMessage + "', " + "'"
 					+ order.signature + "', " + "'" + order.shop.toString() + "', " + "'" + order.address + "', " +"'" + order.city + "', " + "'" 
-					+ order.phone + "', " + "'" + order.paymentPhone + "', " +"'" + order.orderType + "'"
+					+ order.phone + "', " + "'" + order.paymentPhone + "', " +"'" + order.orderType + "', " +"'" + order.timeOfOrder + "'"
 					+ ");";
+			
 			runUpdate(connection, query);
 			
 		} catch (SQLException e) {
+			
 			e.printStackTrace();
 			return null;
 		}		
 		return order;
 		
 	}
-	//Checking if the price is right
-	private double checkTotalPrice( ProductList products) throws SQLException {
+	//Checking if the price is right according to database product's prices
+	private double checkTotalPrice( ProductListCart products) throws SQLException {
 		Double priceToCheck = 0.0;
-		for ( Product p: products.items) {
-			String query = "SELECT " + PRICE + " FROM " + "products" + " WHERE " + "name" + "='" + p.name + "';";
-			
-			ResultSet rs = runQuery(connection, query);
-			while(rs.next()) {
-			Double productPrice = rs.getDouble(PRICE);
-			priceToCheck+=productPrice;
+		for ( String p: products.items.keySet()) {
+			ProductManager productManager = new ServerProductManager(requestedBy,connection);			
+			Product toCheck = new Product();
+			toCheck = productManager.getProduct(p);
+			priceToCheck+=toCheck.price;
 			}
 			
+		if(priceToCheck>0) {
+			priceToCheck+=20.0;  //to add Shipping cost
 		}
 		return priceToCheck;
+	}
+	
+	private String getNextOrderNumber() {
+		StringBuilder str = new StringBuilder();
+		str.append(""+(orderNumber++));		
+		return str.toString();
 	}
 
 }

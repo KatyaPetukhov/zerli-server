@@ -16,6 +16,7 @@ import common.request_data.ComplaintList;
 import common.request_data.Order;
 import common.request_data.OrderList;
 import common.request_data.OrderReport;
+import common.request_data.Product;
 import common.request_data.IncomeReport;
 import common.request_data.IncomeReportList;
 import common.request_data.ProductList;
@@ -107,13 +108,16 @@ public class EchoServer extends AbstractServer {
 			 * user. Incorrect user will fail before this switch.
 			 */
 			break;
+			
 		/* UserManager */
 		case GET_USER:
 			request = handleGetUser(request);
 			break;
+			
 		case GET_USERS:
 			request = handleGetUsers(request);
 			break;
+			
 		case ADD_USER:
 			try {
 				request = handleAddUser(request);
@@ -122,6 +126,11 @@ public class EchoServer extends AbstractServer {
 				
 			}
 			break;
+			
+		case GET_ORDERS:
+			request = handleGetOrders(request);
+			break;
+			
 		case APPROVE_USER:
 			request = handleApproveUser(request);
 			break;
@@ -149,6 +158,7 @@ public class EchoServer extends AbstractServer {
 				e.printStackTrace();
 			}
 			break;
+			
 		case ADD_ORDER:
 			try {
 				request = handleAddOrder(request);
@@ -196,6 +206,10 @@ public class EchoServer extends AbstractServer {
 		
 		case GET_ORDER_REPORT:
 			request = handleGetOrderReport(request);
+			break;
+			
+		case GET_PRODUCT:
+			request = handleGetProduct(request);
 			break;
 	
 		default:
@@ -455,15 +469,47 @@ public class EchoServer extends AbstractServer {
 		CartManager cartManager;
 		cartManager = new ServerCartManager(request.user, manager.getConnection());
 		Order order = Order.fromJson(request.data);
+		System.out.println("GOT + " + order.address);
 		order = cartManager.submitOrder(order);
-
+		
 		if (order == null) {
 			System.out.println("Incorrect request.");
 			request.data = null;
 		} else {
 			request.data = order.toJson();
 		}
-
+		
+		return request;
+	}
+	
+	private Request handleGetOrders(Request request) {
+		OrderList orders = OrderList.fromJson(request.data);
+		orders = manager.getOrderManager(request.user).getOrders(orders.username);
+		if (orders == null) {
+			System.out.println("Incorrect request.");
+			request.data = null;
+		} else {
+			request.data = orders.toJson();
+		}
+	
+		return request;
+	}
+	
+	private Request handleGetProduct(Request request) {
+		/*
+		 * requestType.GET_PRODUCT
+		 */
+		
+	
+		Product product = Product.fromJson(request.data);
+		product = manager.getProductManager(request.user).getProduct(product.name);
+		if (product == null) {
+			System.out.println("Incorrect request.");
+			request.data = null;
+		} else {
+			request.data = product.toJson();
+		}
+		
 		return request;
 	}
 }

@@ -150,14 +150,14 @@ public class ServerProductManager extends BaseSQL implements ProductManager {
 	
 	
 	@Override
-	public boolean addProduct(Product product) throws PermissionDenied {		
+	public boolean addProduct(Product product) throws PermissionDenied {	
 		if (requestedBy.userrole != Role.SUPPORT) {
 			throw new PermissionDenied();	
 		}
 		try {
 			String query = "INSERT INTO " + TABLE_NAME + " VALUES (" + "'" + product.name + "', " + "'" + product.category + "', " + "'"
 					+ product.price + "', " + "'" + product.discount + "', "+ "'" + product.imageString +"'"+ ");";
-			System.out.println("QUERY TO SQL : " + query);
+		
 			runUpdate(connection, query);
 			
 		} catch (SQLException e) {
