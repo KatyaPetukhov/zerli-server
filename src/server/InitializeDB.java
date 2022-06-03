@@ -97,10 +97,12 @@ public class InitializeDB {
 		try {
 			ServerUserManager.resetComplaints(connection);
 			ServerUserManager userManager = new ServerUserManager(worker, connection);
-			userManager.addNewCompliant("Jessica", "123", "ugly flowers", "08.06.22", "100", "Awaiting response",
-					"Aaron", "0");
-			userManager.addNewCompliant("Yarden", "234", "dry boquet", "30.05.22", "50", "Awaiting response", "Aaron",
-					"0");
+			userManager.addNewCompliant("Jessica", "123", "ugly flowers", "07/01/2021 12:34:45\r\n"
+					+ "", "100", "Awaiting response",
+					"Aaron", "0",Shop.HAIFA);
+			userManager.addNewCompliant("Yarden", "234", "dry boquet", "07/03/2022 12:34:45\r\n"
+					+ "", "50", "Awaiting response", "Aaron",
+					"0",Shop.NAHARIYA);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

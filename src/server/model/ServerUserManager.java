@@ -95,7 +95,7 @@ public class ServerUserManager extends BaseSQL implements UserManager {
 		}
 		query = "CREATE TABLE complaints (" + USERNAME + VARCHAR + ", orderId" + VARCHAR + ", " + "complaint" + VARCHAR
 				+ ", " + "date" + VARCHAR + ", " + "price" + VARCHAR + ", complaintStatus" + VARCHAR + ", supportName"
-				+ VARCHAR + ", refund" + VARCHAR + ", PRIMARY KEY ( orderId));";
+				+ VARCHAR + ", refund" + VARCHAR + ", " + SHOP_NAME + VARCHAR + ", PRIMARY KEY ( orderId));";
 		try {
 			runUpdate(connection, query);
 		} catch (SQLException e) {
@@ -490,10 +490,10 @@ public class ServerUserManager extends BaseSQL implements UserManager {
 	
 	@Override
 	public boolean addNewCompliant(String userName, String orderId, String complaint, String date, String price,
-			String complaintStatus, String supportName, String refund) {
+			String complaintStatus, String supportName, String refund,Shop shop) {
 		String query = "INSERT INTO complaints VALUES (" + "'" + userName + "', " + "'" + orderId + "', " + "'"
 				+ complaint + "', " + "'" + date + "', " + "'" + price + "', '" + complaintStatus + "', '" + supportName
-				+ "', " + "'" + refund + "');";
+				+ "', " + "'" + refund + "', " + "'" + shop.name() + "');";
 		try {
 			runUpdate(connection, query);
 		} catch (SQLException e) {
@@ -504,10 +504,10 @@ public class ServerUserManager extends BaseSQL implements UserManager {
 	}
 	
 	@Override
-	public ComplaintList getAllComplaints(String supportName) {
+	public ComplaintList getAllComplaints() {
 		ComplaintList complaintList = new ComplaintList();
 		complaintList.complaints = new ArrayList<Complaint>();
-		String query = "SELECT * FROM complaints WHERE supportName = '" + supportName + "';";
+		String query = "SELECT * FROM complaints ;";
 		try {
 			ResultSet rs = runQuery(connection, query);
 			while (rs.next()) { // for lines
@@ -519,6 +519,7 @@ public class ServerUserManager extends BaseSQL implements UserManager {
 				complaint.price = rs.getString("price");
 				complaint.complaintStatus = rs.getString("complaintStatus");
 				complaint.refund = rs.getString("refund");
+				complaint.shop = Shop.valueOf(rs.getString(SHOP_NAME));
 				complaintList.complaints.add(complaint);
 			}
 		} catch (SQLException e) {

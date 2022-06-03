@@ -12,6 +12,7 @@ import common.Role;
 
 import common.interfaces.ProductManager;
 import common.interfaces.UserManager;
+import common.request_data.ComplaintList;
 import common.request_data.IncomeReport;
 import common.request_data.IncomeReportList;
 import common.request_data.Shop;
@@ -237,6 +238,11 @@ public class DBManager {
 	public void importUsersFromDifferentDataBase() {
 		getUserManager(null).importUsersFromDifferentDataBase(getImportedDatabse());
 		
+	}
+
+	public ComplaintList getAllComplaints() {
+		// TODO Auto-generated method stub
+		return getUserManager(null).getAllComplaints();
 	}
 
 	

@@ -160,57 +160,33 @@ public class EchoServer extends AbstractServer {
 		case GET_ALL_COMPLAINTS:
 			try {
 				request = handleGetComplaints(request);
-			} catch (InstantiationException e) {
+			} catch (InstantiationException | IllegalAccessException | ClassNotFoundException | SQLException e) {
 				e.printStackTrace();
-			} catch (IllegalAccessException e) {
-				e.printStackTrace();
-			} catch (ClassNotFoundException e) {
-				e.printStackTrace();
-			} catch (SQLException e) {
-				e.printStackTrace();
-			}
+			} 
 			break;
 			
 		case GET_REFUND_AMOUNT:
 			try {
 				request = handleGetRefund(request);
-			} catch (InstantiationException e) {
+			} catch (InstantiationException | IllegalAccessException | ClassNotFoundException | SQLException e) {
 				e.printStackTrace();
-			} catch (IllegalAccessException e) {
-				e.printStackTrace();
-			} catch (ClassNotFoundException e) {
-				e.printStackTrace();
-			} catch (SQLException e) {
-				e.printStackTrace();
-			}
+			} 
 			break;
 			
 		case GET_USER_OREDERS:
 			try {
 				request = handleGetUserOrder(request);
-			} catch (InstantiationException e) {
+			} catch (InstantiationException | IllegalAccessException | ClassNotFoundException | SQLException e) {
 				e.printStackTrace();
-			} catch (IllegalAccessException e) {
-				e.printStackTrace();
-			} catch (ClassNotFoundException e) {
-				e.printStackTrace();
-			} catch (SQLException e) {
-				e.printStackTrace();
-			}
+			} 
 			break;
 			
 		case GET_ANSWERS_SURVEY:
 			try {
 				request = handleSurveyAnswers(request);
-			} catch (InstantiationException e) {
+			} catch (InstantiationException | IllegalAccessException | ClassNotFoundException | SQLException e) {
 				e.printStackTrace();
-			} catch (IllegalAccessException e) {
-				e.printStackTrace();
-			} catch (ClassNotFoundException e) {
-				e.printStackTrace();
-			} catch (SQLException e) {
-				e.printStackTrace();
-			}
+			} 
 			break;
 			
 		case CHANGE_STATUS:
@@ -247,8 +223,13 @@ public class EchoServer extends AbstractServer {
 		private Request handleGetComplaints(Request request)
 				throws InstantiationException, IllegalAccessException, ClassNotFoundException, SQLException {
 			ComplaintList complaintList = ComplaintList.fromJson(request.data);
-			ServerUserManager serverUserManager = new ServerUserManager(request.user, manager.getConnection());
-			complaintList = serverUserManager.getAllComplaints(request.user.nickname);
+	
+			complaintList = manager.getAllComplaints();
+			if(complaintList == null) {
+				request.requestType = RequestType.REQUEST_FAILED;
+				request.data = null;
+				return request;
+			}
 			request.data = complaintList.toJson();
 			return request;
 		}
