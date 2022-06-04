@@ -8,7 +8,9 @@ import java.util.List;
 
 import common.Role;
 import common.interfaces.UserManager;
+import common.request_data.Shop;
 import common.request_data.User;
+import common.request_data.UsersList;
 
 public class ServerUserManager extends BaseSQL implements UserManager {
 	/*
@@ -22,10 +24,20 @@ public class ServerUserManager extends BaseSQL implements UserManager {
 	private static String PASSWORD = "password";
 	private static String NICKNAME = "nickname";
 	private static String USERROLE = "userrole"; // varchar
+	private static String SHOP_NAME = "ShopName";
 	private static String APPROVED = "approved"; // boolean
+	private static String CARD_NUMBER = "cardNumber"; 
+	private static String EXPIRATION_DATE = "expirationDate"; 
+	private static String CVV = "CVV"; 
+	private static String LOG_INFO = "logInfo"; // boolean
+	private static String INT = " int";
+	private static String DOUBLE = " double";
+	
 
 	private static String VARCHAR = " varchar(255)";
 	private static String BOOLEAN = " boolean";
+	
+	//private static IncomeReportList incomeReportList = new IncomeReportList();
 	/* End SQL SCHEMA */
 
 	private User requestedBy;
@@ -52,7 +64,6 @@ public class ServerUserManager extends BaseSQL implements UserManager {
 		}
 		return true;
 	}
-
 	public static void resetUsers(Connection connection) {
 		String query = "DROP TABLE IF EXISTS " + TABLE_NAME + ";";
 		try {
@@ -61,7 +72,9 @@ public class ServerUserManager extends BaseSQL implements UserManager {
 			e.printStackTrace();
 		}
 		query = "CREATE TABLE " + TABLE_NAME + " (" + USERNAME + VARCHAR + ", " + PASSWORD + VARCHAR + ", " + NICKNAME
-				+ VARCHAR + ", " + USERROLE + VARCHAR + ", " + APPROVED + BOOLEAN + ", PRIMARY KEY (" + USERNAME
+				+ VARCHAR + ", " + SHOP_NAME + VARCHAR + ", "+ USERROLE + VARCHAR + ", " + APPROVED + BOOLEAN 
+				+ ", "+ CARD_NUMBER + VARCHAR + ", "+ EXPIRATION_DATE + VARCHAR + ", "
+				+ CVV + VARCHAR + ", " + LOG_INFO + BOOLEAN + ", " + "userWallet" + VARCHAR + ", PRIMARY KEY (" + USERNAME
 				+ "));";
 		try {
 			runUpdate(connection, query);
@@ -82,12 +95,22 @@ public class ServerUserManager extends BaseSQL implements UserManager {
 				user.username = rs.getString(USERNAME);
 				user.password = rs.getString(PASSWORD);
 				user.nickname = rs.getString(NICKNAME);
+				user.shopname = Shop.valueOf(rs.getString(SHOP_NAME));
 				user.approved = (rs.getInt(APPROVED) != 0 ? true : false);
 				user.userrole = Role.valueOf(rs.getString(USERROLE));
-				if (!user.password.equals(password)) {
+				user.cardNumber = rs.getString(CARD_NUMBER);
+				user.exDate = rs.getString(EXPIRATION_DATE);
+				user.cvv = rs.getString(CVV);
+				user.logInfo = (rs.getInt(LOG_INFO) != 0 ? true : false);
+				user.userWallet=Double.parseDouble(rs.getString("userWallet"));
+				user.setAccountStatus();
+				if (!user.password.equals(password) || user.logInfo )  {
+				
 					return null;
 				}
+				
 				return user;
+				
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -96,14 +119,22 @@ public class ServerUserManager extends BaseSQL implements UserManager {
 	}
 
 	@Override
-	public boolean addNewUser(String username, String password, String nickname, Role role, boolean approved)
+	public boolean addNewUser(String username, String password, String nickname,Shop shopname, Role role,
+			boolean approved,String cardNumber,String expirationDate,String cvv,boolean logInfo,double userWallet)
 			throws WeakPassword, PermissionDenied {
-		if (!isManager && approved == true) {
-			throw new PermissionDenied();
-		}
-		checkPasswordStrength(password);
-		String query = "INSERT INTO " + TABLE_NAME + " VALUES (" + "'" + username + "', " + "'" + password + "', " + "'"
-				+ nickname + "', " + "'" + role.name() + "', " + (approved ? 1 : 0) + ");";
+		String query;
+		
+		
+//		if(cardNumber != null) {
+//		query = "UPDATE " + TABLE_NAME + " SET " + NICKNAME + "='" + nickname + "', " + SHOP_NAME + "='" + shopname.name() + "', " + USERROLE + "='" + role.name() + "', " +
+//				APPROVED + "='" + (approved ? 1: 0) + "', " + CARD_NUMBER + "='" + cardNumber + "', " + EXPIRATION_DATE + "='" + expirationDate + "', " + 
+//				CVV + "='" + cvv + "', " + LOG_INFO + "='" + (logInfo ? 1 : 0) + "', " + "userWallet" + "='" + userWallet + "' WHERE " + USERNAME + "='" + username + "';";
+//		}
+//		else
+			query = "INSERT INTO " + TABLE_NAME + " VALUES (" + "'" + username + "', " + "'" + password + "', " + "'"
+					+ nickname + "', " + "'" + shopname.name() +  "', " + "'" + role.name() + "', " + (approved ? 1 : 0) 
+					+ ", " + "'" + cardNumber + "', " + "'" + expirationDate + "', " + "'" + cvv + "', " + "'" + (logInfo ? 1 : 0) + "', " + "'" + userWallet + "');";
+			
 		try {
 			runUpdate(connection, query);
 		} catch (SQLException e) {
@@ -146,13 +177,11 @@ public class ServerUserManager extends BaseSQL implements UserManager {
 	}
 
 	@Override
-	public List<User> getUsers(boolean approved, int start, int amount) throws PermissionDenied {
-		if (!isManager) {
-			throw new PermissionDenied();
-		}
-		String query = "SELECT * FROM " + TABLE_NAME + " WHERE " + APPROVED + "=" + (approved ? 1 : 0) + " LIMIT "
-				+ start + "," + amount + ";";
-		List<User> users = new ArrayList<User>();
+	public UsersList getUsers() {
+	
+		String query = "SELECT * FROM " + TABLE_NAME + ";";
+		UsersList usersList= new UsersList();
+		usersList.Users = new ArrayList<User>();
 
 		try {
 			ResultSet rs = runQuery(connection, query);
@@ -161,19 +190,39 @@ public class ServerUserManager extends BaseSQL implements UserManager {
 				user.username = rs.getString(USERNAME);
 				user.password = rs.getString(PASSWORD);
 				user.nickname = rs.getString(NICKNAME);
+				user.shopname = Shop.valueOf(rs.getString(SHOP_NAME));
 				user.approved = (rs.getInt(APPROVED) != 0 ? true : false);
 				user.userrole = Role.valueOf(rs.getString(USERROLE));
-				users.add(user);
+				user.cardNumber = rs.getString(CARD_NUMBER);
+				user.exDate = rs.getString(EXPIRATION_DATE);
+				user.cvv = rs.getString(CVV);
+				user.logInfo = (rs.getInt(LOG_INFO) != 0 ? true : false);
+				user.setAccountStatus();
+				usersList.Users.add(user);
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
-		return users;
+		return usersList;
 	}
 
 	private static void checkPasswordStrength(String password) throws WeakPassword {
 		if (password == null || password.isEmpty()) {
 			throw new WeakPassword("Password cannot be empty.");
 		}
+	}
+
+	@Override
+	public boolean updateWallet(double wallet) {
+		String s = ""+wallet;
+		String query = "UPDATE " + TABLE_NAME + " SET " + "userWallet" + "='" + s + "' WHERE " + USERNAME + "='" + requestedBy.username + "';";
+		try {
+			runUpdate(connection, query);
+		} catch (SQLException e) {
+			/* TODO: probably incorrect. Will not fail if result is empty. */
+			e.printStackTrace();
+			return false;
+		}
+		return true;
 	}
 }

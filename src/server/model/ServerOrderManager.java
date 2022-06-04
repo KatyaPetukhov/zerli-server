@@ -35,6 +35,7 @@ public class ServerOrderManager extends BaseSQL implements OrderManager {
 	private static String PAYMENTPHONE = "paymentPhone";
 	private static String ORDERTYPE = "orderType";
 	private static String DATEOFORDER = "dateOfOrder";
+	private static String PAYBYWALLET = "paidByWallet";
 
 	/* TODO: Define fields */
 
@@ -67,7 +68,7 @@ public class ServerOrderManager extends BaseSQL implements OrderManager {
 				+ DOUBLE + ", " + RECIPIENT + VARCHAR + ", " + GREETING + MEDIUMTEXT + ", " + SIGNATURE + VARCHAR + ", "
 				+ SHOP + VARCHAR + ", " + ADDRESS + VARCHAR + ", " + CITY + VARCHAR + ", " + DELIVERYPHONE + VARCHAR
 				+ ", " + PAYMENTPHONE + VARCHAR + ", " + ORDERTYPE + VARCHAR + ", " + DATEOFORDER + VARCHAR
-				+ ", PRIMARY KEY (" + ORDER_NUMBER + "));";
+				+ ", " + PAYBYWALLET + DOUBLE + ", PRIMARY KEY (" + ORDER_NUMBER + "));";
 		try {
 			runUpdate(connection, query);
 		} catch (SQLException e) {
@@ -111,6 +112,7 @@ public class ServerOrderManager extends BaseSQL implements OrderManager {
 				order.city = rs.getString(CITY);
 				order.address = rs.getString(ADDRESS);
 				order.timeOfOrder = rs.getString(DATEOFORDER);
+				order.paidByWallet = rs.getDouble(PAYBYWALLET);
 				orderList.orders.add(order);
 
 			}

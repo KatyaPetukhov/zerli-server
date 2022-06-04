@@ -2,11 +2,15 @@ package server.model;
 
 import java.io.IOException;
 import java.sql.SQLException;
+import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.ArrayList;
 
 import common.Request;
 import common.RequestType;
 import common.interfaces.CartManager;
+import common.interfaces.OrderManager;
+import common.interfaces.ProductManager;
+import common.interfaces.UserManager;
 import common.interfaces.UserManager.PermissionDenied;
 import common.interfaces.UserManager.WeakPassword;
 import common.request_data.CategoriesList;
@@ -87,10 +91,23 @@ public class EchoServer extends AbstractServer {
 			request = handleGetUser(request);
 			break;
 		case ADD_USER:
-			request = handleAddUser(request);
+			try {
+				request = handleAddUser(request);
+			} catch (SQLIntegrityConstraintViolationException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
 			break;
 		case APPROVE_USER:
 			request = handleApproveUser(request);
+			break;
+		case UPDATE_WALLET:
+			try {
+				request = handleUpdateWallet(request);
+			} catch (InstantiationException | IllegalAccessException | ClassNotFoundException | SQLException e2) {
+				// TODO Auto-generated catch block
+				e2.printStackTrace();
+			}
 			break;
 		/* TODO: Missing REMOVE_USER, GET_USERS */
 		/* ProductManager */
@@ -103,6 +120,23 @@ public class EchoServer extends AbstractServer {
 		case GET_PRODUCT:
 			request = handleGetProduct(request);
 			break;
+		case TOFROM_CATALOGUE:
+			try {
+				request = handleToFromCatalogue(request);
+			} catch (InstantiationException | IllegalAccessException | ClassNotFoundException | SQLException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+			break;
+		case SET_DISCOUNT:
+			try {
+				request = handleSetDiscount(request);
+			} catch (InstantiationException | IllegalAccessException | ClassNotFoundException | PermissionDenied
+					| SQLException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+			break;
 		case ADD_ORDER:
 			try {
 				request = handleAddOrder(request);
@@ -112,7 +146,12 @@ public class EchoServer extends AbstractServer {
 			}
 			break;
 		case GET_ORDERS:
-			request = handleGetOrders(request);
+			try {
+				request = handleGetOrders(request);
+			} catch (InstantiationException | IllegalAccessException | ClassNotFoundException | SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 			break;
 		/* TODO: Missing ADD_PRODUCT, REMOVE_PRODUCT */
 		default:
@@ -125,6 +164,22 @@ public class EchoServer extends AbstractServer {
 	}
 
 
+
+	
+
+
+
+	private Request handleUpdateWallet(Request request) throws InstantiationException, IllegalAccessException, ClassNotFoundException, SQLException {
+		UserManager userManager = new ServerUserManager(request.user, manager.getConnection());
+		User walletToUpdate = User.fromJson(request.data);
+		if (!userManager.updateWallet(walletToUpdate.userWallet)) {
+			/* Product does not exists. */
+			request.requestType = RequestType.REQUEST_FAILED;
+		}
+		request.data = null;
+		return request;
+	}
+	
 
 	private void respond(ConnectionToClient client, Request request) {
 		try {
@@ -151,17 +206,26 @@ public class EchoServer extends AbstractServer {
 		return request;
 	}
 
-	private Request handleAddUser(Request request) {
+	private Request handleAddUser(Request request) throws SQLIntegrityConstraintViolationException {
 		/*
 		 * requestType.ADD_USER
 		 */
 		User toAdd = User.fromJson(request.data);
+		User checkUser =manager.validateUser(toAdd);
+		
+		if(checkUser == null  || checkUser.cardNumber == null ) {
+			request.requestType = RequestType.REQUEST_FAILED;;
+			request.data = new ServerError("User name allready in dataBase").toJson();
+			return request;
+		}
+
 		try {
-			if (!manager.getUserManager(request.user).addNewUser(toAdd.username, toAdd.password, toAdd.nickname,
-					toAdd.userrole, toAdd.approved)) {
+			if (manager.getUserManager(request.user).addNewUser(toAdd.username, toAdd.password, toAdd.nickname,toAdd.shopname,
+					toAdd.userrole, toAdd.approved,toAdd.cardNumber,toAdd.exDate,toAdd.cvv,toAdd.logInfo,toAdd.userWallet)) {
 				/* User already exists. */
-				request.requestType = RequestType.REQUEST_FAILED;
+				
 			}
+			else request.requestType = RequestType.REQUEST_FAILED;
 			request.data = null;
 		} catch (WeakPassword e) {
 			/* Bad password. */
@@ -170,6 +234,11 @@ public class EchoServer extends AbstractServer {
 		} catch (PermissionDenied e) {
 			request.requestType = RequestType.FORBIDDEN;
 			request.data = new ServerError("Only manager can approve new users.").toJson();
+		}
+		 catch (SQLIntegrityConstraintViolationException e1) {
+		e1.printStackTrace();	
+		request.requestType = RequestType.REQUEST_FAILED;;
+		request.data = new ServerError("User name not in Database").toJson();
 		}
 		return request;
 	}
@@ -233,9 +302,8 @@ public class EchoServer extends AbstractServer {
 	private Request handleAddOrder(Request request) throws InstantiationException, IllegalAccessException, ClassNotFoundException, SQLException {
 		CartManager cartManager;
 		cartManager = new ServerCartManager(request.user, manager.getConnection());
-		System.out.println("TESTINGGGG");
 		Order order = Order.fromJson(request.data);
-		System.out.println("GOT + " + order.address);
+		//System.out.println("GOT + " + order.address);
 		order = cartManager.submitOrder(order);
 		
 		if (order == null) {
@@ -249,9 +317,10 @@ public class EchoServer extends AbstractServer {
 	}
 	
 	
-	private Request handleGetOrders(Request request) {
+	private Request handleGetOrders(Request request) throws InstantiationException, IllegalAccessException, ClassNotFoundException, SQLException {
+		OrderManager orderManager = new ServerOrderManager(request.user, manager.getConnection());
 		OrderList orders = OrderList.fromJson(request.data);
-		orders = manager.getOrderManager(request.user).getOrders(orders.username);
+		orders = orderManager.getOrders(orders.username);
 		if (orders == null) {
 			System.out.println("Incorrect request.");
 			request.data = null;
@@ -261,4 +330,31 @@ public class EchoServer extends AbstractServer {
 	
 		return request;
 	}
+	
+	private Request handleToFromCatalogue(Request request) throws InstantiationException, IllegalAccessException, ClassNotFoundException, SQLException {
+		ProductManager  productManager= new ServerProductManager(request.user, manager.getConnection());
+		Product toFromCatalogue = Product.fromJson(request.data);
+		try {
+			if (!productManager.productToFromCatalogue(toFromCatalogue.name,toFromCatalogue.inCatalogue)) {
+				/* Product does not exists. */
+				request.requestType = RequestType.REQUEST_FAILED;
+			}
+			request.data = null;
+		} catch (PermissionDenied e) {
+			request.requestType = RequestType.FORBIDDEN;
+			request.data = new ServerError("Can not change to/from catalogue field.").toJson();
+		}
+		return request;
+	}
+	
+	private Request handleSetDiscount(Request request) throws PermissionDenied, InstantiationException, IllegalAccessException, ClassNotFoundException, SQLException {
+		ProductManager  productManager= new ServerProductManager(request.user, manager.getConnection());
+		Product product = Product.fromJson(request.data);		
+		if (!productManager.setDiscount(product.name,product.discount)) {
+			/* Product does not exists. */
+			request.requestType = RequestType.REQUEST_FAILED;
+		}
+		request.data = null;
+		return request;
+}
 }
