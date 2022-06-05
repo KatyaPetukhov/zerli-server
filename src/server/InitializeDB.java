@@ -3,17 +3,24 @@ package server;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.SQLIntegrityConstraintViolationException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
 
 import common.Role;
 
 import common.interfaces.UserManager.PermissionDenied;
 import common.interfaces.UserManager.WeakPassword;
 import common.request_data.ImageFile;
-
+import common.request_data.Order;
+import common.request_data.OrderStatus;
+import common.request_data.OrderType;
 import common.request_data.Product;
+import common.request_data.ProductListCart;
 import common.request_data.Shop;
 import common.request_data.User;
 import server.model.DBManager;
+import server.model.ServerCartManager;
 import server.model.ServerOrderManager;
 import server.model.ServerProductManager;
 import server.model.ServerUserManager;
@@ -31,15 +38,92 @@ public class InitializeDB {
 			return;
 		}
 		
-		
-		addOrdersReports(connection);
 		addUsers(connection);
+		addOrdersReports(connection);
 		addOrderTable(connection);
 		addIncomeReports(connection);
 		addComplaints(connection);
 		addProducts(connection);
+		addOrders(connection);
+		addSurveys(connection);
+		addSurveyAnalysis(connection);
+		
 	}
 	
+	private void addSurveyAnalysis(Connection connection) {
+		User worker = new User();
+		worker.userrole = Role.WORKER;
+		try {
+			ServerUserManager.resetSurveyAnalysis(connection);
+			ServerUserManager userManager = new ServerUserManager(worker, connection);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+
+
+	private void addOrders(Connection connection) {
+		User manager = new User();
+		manager.userrole = Role.MANAGER;
+		manager.userWallet = 0.0;
+		try {
+			ServerOrderManager.resetOrders(connection);
+			ServerCartManager cartManager = new ServerCartManager(manager, connection);
+
+			Order order = new Order();
+			order.address = "Levi eshkol";
+			order.city = "Haifa";
+			order.date = "2022-06-08";
+			order.greetingMessage = "I LOVE THIS PROJECT!";
+			order.hour = "19:00";
+			order.orderNumber = "";
+			order.orderType = OrderType.DELIVERY;
+			order.paymentPhone = "0525381648";
+			order.phone = "0528211166";
+			order.products = new ProductListCart();
+			order.products.items = new HashMap<String,Integer>();
+			order.products.items.put("Field Beauty", 4);
+			order.recipient = "Adam";
+			order.shop = Shop.HAIFA;
+			order.signature = "From Yarden gabay";
+			order.status = OrderStatus.WAITING_FOR_APPROVE;
+			order.totalPrice = 0;
+			order.username = "u2";
+			DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
+			LocalDateTime now = LocalDateTime.now();
+			order.timeOfOrder = dtf.format(now);
+			cartManager.submitOrder(order);
+			
+			order = new Order();
+			order.address = "Hazit";
+			order.city = "Haifa";
+			order.date = "2022-06-09";
+			order.greetingMessage = "I LOVE U";
+			order.hour = "18:00";
+			order.orderNumber = "";
+			order.orderType = OrderType.TAKE_AWAY;
+			order.paymentPhone = "0525381648";
+			order.phone = "";
+			order.products = new ProductListCart();
+			order.products.items = new HashMap<String,Integer>();
+			order.products.items.put("Pink Spring", 2);
+			order.recipient = "Eve";
+			order.shop = Shop.HAIFA;
+			order.signature = "From Snake";
+			order.status = OrderStatus.WAITING_FOR_APPROVE;
+			order.totalPrice = 0;
+			order.username = "u2";
+			dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
+			now = LocalDateTime.now();
+			order.timeOfOrder = dtf.format(now);
+			cartManager.submitOrder(order);
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
 
 
 	private void createDatabase(DBManager model) {
@@ -86,14 +170,15 @@ public class InitializeDB {
 		try {
 			ServerUserManager.resetUsers(connection);
 			ServerUserManager userManager = new ServerUserManager(manager, connection);
-			// to USERS SQL: UserName,Password,Nickname,shopname,userRole,cardNumber,expirationDate,cvv,logInfo,userWallet
-			userManager.addNewUser("u", "u", "Katya",Shop.NONE, Role.GUEST, true,"1111222233334444","18-7-2023","132",false,"0");
-			userManager.addNewUser("o", "o", "Yarden",Shop.ALL, Role.OWNER, true,null,null,null,false,null);
-			userManager.addNewUser("m", "m", "Niv",Shop.HAIFA, Role.MANAGER, true,null,null,null,false,null);
-			//userManager.addNewUser("w1", "w1", "Good one",Shop.HAIFA, Role.WORKER, true,"10",null,null,false,null);
+			
+		//	userManager.addNewUser("u", "u", "Katya",Shop.NONE, Role.CUSTOMER, true,"1111222233334444","18-7-2023","132",false,"0");
+			userManager.addNewUser("o", "o", "Yarden",Shop.ALL, Role.OWNER, true,null,null,null,false,"100");
+			userManager.addNewUser("m", "m", "Niv",Shop.HAIFA, Role.MANAGER, true,null,null,null,false,"100");
+			userManager.addNewUser("e", "e", "Expert",Shop.ALL, Role.SERVICE_EXPERT, true,null,null,null,false,"100");
+			//userManager.addNewUser("w1", "w1", "Good one",Shop.HAIFA, Role.WORKER, true,"1",null,null,false,"100");
 			//userManager.addNewUser("w2", "w2", "Bad one",Shop.HAIFA, Role.WORKER, true,"0",null,null,false,null);
-			userManager.addNewUser("s", "s", "Aaron",Shop.ALL, Role.SUPPORT, true,null,null,null,false,null);
-			userManager.addNewUser("d", "d", "Yagan",Shop.ALL, Role.DELIVERY, true,null,null,null,false,null);
+			userManager.addNewUser("s", "s", "Aaron",Shop.ALL, Role.SUPPORT, true,null,null,null,false,"100");
+			userManager.addNewUser("d", "d", "Yagan",Shop.ALL, Role.DELIVERY, true,null,null,null,false,"100");
 		} catch (WeakPassword | PermissionDenied e) {
 			e.printStackTrace();
 		}
@@ -107,10 +192,10 @@ public class InitializeDB {
 			ServerUserManager userManager = new ServerUserManager(worker, connection);
 			userManager.addNewCompliant("Jessica", "123", "ugly flowers", "07/01/2021 12:34:45\r\n"
 					+ "", "100", "Awaiting response",
-					"Aaron", "0",Shop.HAIFA);
+					"0", Shop.HAIFA,"s");
 			userManager.addNewCompliant("Yarden", "234", "dry boquet", "07/03/2022 12:34:45\r\n"
-					+ "", "50", "Awaiting response", "Aaron",
-					"0",Shop.NAHARIYA);
+					+ "", "50", "Awaiting response","0" ,
+					Shop.NAHARIYA,"s");
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -122,7 +207,8 @@ public class InitializeDB {
 		try {
 			ServerUserManager.resetSurvey(connection);
 			ServerUserManager userManager = new ServerUserManager(worker, connection);
-			userManager.setSurveyAnswers(1, 2, 1, 4, 3, 7, "Shop survey", "HAIFA", "2022/05");
+			// userManager.setSurveyAnswers(1, 2, 1, 4, 3, 7, "Sales survey", "HAIFA",
+			// "2022/04");
 //			userManager.setSurveyAnswers(0, 0, 0, 0, 0, 0, "1", "2", "3");
 //			userManager.setSurveyAnswers(0, 0, 0, 0, 0, 0, "1", "2", "3");
 //			userManager.setSurveyAnswers(0, 0, 0, 0, 0, 0, "1", "2", "3");
@@ -139,38 +225,37 @@ public class InitializeDB {
 		ServerProductManager productManager = new ServerProductManager(support, connection);
 
 		productManager.addProduct(new Product("Field Beauty", 40.0, 0, "Bouquet",
-				ImageFile.asEncodedString("./src/server/gallery/b1.jpg")));
+				ImageFile.asEncodedString("./src/server/gallery/b1.jpg"),true));
 	
 		productManager.addProduct(new Product("Warm White", 60.0, 0, "Bouquet",
-				ImageFile.asEncodedString("./src/server/gallery/b2.jpg")));
+				ImageFile.asEncodedString("./src/server/gallery/b2.jpg"),true));
 		
 		productManager.addProduct(new Product("Pink Spring", 55.0, 0, "Bouquet",
-				ImageFile.asEncodedString("./src/server/gallery/b3.jpg")));
+				ImageFile.asEncodedString("./src/server/gallery/b3.jpg"),false));
 		
 		productManager.addProduct(
-				new Product("Cute Ball", 70.0, 0, "Bouquet", ImageFile.asEncodedString("./src/server/gallery/b4.jpg")));
+				new Product("Cute Ball", 70.0, 0, "Bouquet", ImageFile.asEncodedString("./src/server/gallery/b4.jpg"),false));
 		
 		productManager.addProduct(new Product("High Ground", 85.0, 0, "Bouquet",
-				ImageFile.asEncodedString("./src/server/gallery/b5.jpg")));
+				ImageFile.asEncodedString("./src/server/gallery/b5.jpg"),true));
 		
 		productManager.addProduct(
-				new Product("With Love", 65.0, 0, "Bouquet", ImageFile.asEncodedString("./src/server/gallery/b6.jpg")));
+				new Product("With Love", 65.0, 0, "Bouquet", ImageFile.asEncodedString("./src/server/gallery/b6.jpg"),true));
 		
 		productManager.addProduct(new Product("Happy moments", 200.0, 0, "Wedding",
-				ImageFile.asEncodedString("./src/server/gallery/w1.jpg")));
+				ImageFile.asEncodedString("./src/server/gallery/w1.jpg"),true));
 		
 		productManager.addProduct(
-				new Product("Memories", 150.0, 0, "Funeral", ImageFile.asEncodedString("./src/server/gallery/f1.jpg")));
+				new Product("Memories", 150.0, 0, "Funeral", ImageFile.asEncodedString("./src/server/gallery/f1.jpg"),true));
 		
 		productManager.addProduct(new Product("Pink Orchid", 120.0, 0, "Flowerpot",
-				ImageFile.asEncodedString("./src/server/gallery/p1.jpg")));
+				ImageFile.asEncodedString("./src/server/gallery/p1.jpg"),true));
 		
 		productManager.addProduct(new Product("1m White Rose", 25.0, 0, "Retail",
-				ImageFile.asEncodedString("./src/server/gallery/r1.jpg")));
+				ImageFile.asEncodedString("./src/server/gallery/r1.jpg"),true));
 		
 		productManager.addProduct(new Product("0.6m Red Rose", 10.0, 0, "Retail",
-				ImageFile.asEncodedString("./src/server/gallery/r2.jpg")));
-
+				ImageFile.asEncodedString("./src/server/gallery/r2.jpg"),true));
 		
 
 	

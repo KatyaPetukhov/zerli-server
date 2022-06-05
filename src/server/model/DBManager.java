@@ -15,6 +15,7 @@ import common.interfaces.UserManager;
 import common.request_data.ComplaintList;
 import common.request_data.IncomeReport;
 import common.request_data.IncomeReportList;
+import common.request_data.Order;
 import common.request_data.OrderReport;
 import common.request_data.Shop;
 import common.request_data.User;
@@ -250,6 +251,26 @@ public class DBManager {
 		// TODO Auto-generated method stub
 		return getUserManager(null).getOrderReport(orderReport.shop, orderReport.year, orderReport.month);
 	}
+
+	public void updateOrder(Order order) {
+		
+		getOrderManager(null).updateOrder(order);
+		
+	}
+
+	public void deleteOrder(Order order) {
+		
+		getOrderManager(null).deleteOrder(order);
+	}
+	
+	public boolean addNewCompliant(String userName, String orderId, String complaint, String date, String price,
+			String complaintStatus, String refund, Shop shop, String supportName) {
+
+		return getUserManager(null).addNewCompliant(userName, orderId, complaint, date, price, complaintStatus, refund,
+				shop, supportName);
+	}
+	
+	
 
 	
 }

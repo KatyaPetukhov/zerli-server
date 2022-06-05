@@ -35,6 +35,7 @@ public class ServerOrderManager extends BaseSQL implements OrderManager {
 	private static String PAYMENTPHONE = "paymentPhone";
 	private static String ORDERTYPE = "orderType";
 	private static String DATEOFORDER = "dateOfOrder";
+	private static String PAYBYWALLET = "paidByWallet";
 
 	/* TODO: Define fields */
 
@@ -67,7 +68,7 @@ public class ServerOrderManager extends BaseSQL implements OrderManager {
 				+ DOUBLE + ", " + RECIPIENT + VARCHAR + ", " + GREETING + MEDIUMTEXT + ", " + SIGNATURE + VARCHAR + ", "
 				+ SHOP + VARCHAR + ", " + ADDRESS + VARCHAR + ", " + CITY + VARCHAR + ", " + DELIVERYPHONE + VARCHAR
 				+ ", " + PAYMENTPHONE + VARCHAR + ", " + ORDERTYPE + VARCHAR + ", " + DATEOFORDER + VARCHAR
-				+ ", PRIMARY KEY (" + ORDER_NUMBER + "));";
+				+ ", " + PAYBYWALLET + DOUBLE + ", PRIMARY KEY (" + ORDER_NUMBER + "));";
 		try {
 			runUpdate(connection, query);
 		} catch (SQLException e) {
@@ -78,8 +79,20 @@ public class ServerOrderManager extends BaseSQL implements OrderManager {
 
 	@Override
 	public Order getOrder(String orderNum) {
+		Order order = new Order();
+		String query = "SELECT user FROM " + TABLE_NAME + " WHERE " + ORDER_NUMBER + "='" + orderNum + "';";
+		try {
+			ResultSet rs = runQuery(connection, query);
+			/* name is a key, so there can be 0 or 1 objects only. */
 
-		return null;
+			while (rs.next()) {
+				order.username = rs.getString("user");
+			}
+			
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return order;
 	}
 
 	@Override
@@ -111,6 +124,7 @@ public class ServerOrderManager extends BaseSQL implements OrderManager {
 				order.city = rs.getString(CITY);
 				order.address = rs.getString(ADDRESS);
 				order.timeOfOrder = rs.getString(DATEOFORDER);
+				order.paidByWallet = rs.getDouble(PAYBYWALLET);
 				orderList.orders.add(order);
 
 			}
@@ -119,6 +133,65 @@ public class ServerOrderManager extends BaseSQL implements OrderManager {
 			e.printStackTrace();
 		}
 		return orderList;
+	}
+	
+	@Override
+	public OrderList getOrdersM(String shopName) {
+		OrderList orderList = new OrderList();
+		orderList.orders = new ArrayList<Order>();
+		String query = "SELECT * FROM " + TABLE_NAME + " WHERE " + SHOP + "='" + shopName + "';";
+		try {
+			ResultSet rs = runQuery(connection, query);
+			/* name is a key, so there can be 0 or 1 objects only. */
+
+			while (rs.next()) {
+				Order order = new Order();
+				order.totalPrice = rs.getDouble(PRICE);
+				order.status = OrderStatus.fromString(rs.getString(STATUS));
+				order.signature = rs.getString(SIGNATURE);
+				order.shop = Shop.fromString(rs.getString(SHOP));
+				order.recipient = rs.getString(RECIPIENT);
+				String productsJson = rs.getString(PRODUCTS);
+				order.products = ProductListCart.fromJson(productsJson);
+				order.greetingMessage = rs.getString(GREETING);
+				order.phone = rs.getString(DELIVERYPHONE);
+				order.paymentPhone = rs.getString(PAYMENTPHONE);
+				order.orderType = OrderType.fromString(rs.getString(ORDERTYPE));
+				order.orderNumber = rs.getString(ORDER_NUMBER);
+				order.hour = rs.getString(HOUR);
+				order.date = rs.getString(DATE);
+				order.city = rs.getString(CITY);
+				order.address = rs.getString(ADDRESS);
+				order.timeOfOrder = rs.getString(DATEOFORDER);
+				orderList.orders.add(order);
+
+			}
+
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return orderList;
+	}
+
+	@Override
+	public void updateOrder(Order order) {
+		String query = "UPDATE " + TABLE_NAME + " SET " + STATUS +"='" + order.status +   "' WHERE " + ORDER_NUMBER  + "='" + order.orderNumber + "';";
+		try {
+			runUpdate(connection, query);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
+
+	@Override
+	public void deleteOrder(Order order) {
+		String query = "DELETE FROM "+ TABLE_NAME+ " WHERE " + ORDER_NUMBER  + "='" + order.orderNumber + "';";
+		try {
+			runUpdate(connection, query);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		
 	}
 
 }

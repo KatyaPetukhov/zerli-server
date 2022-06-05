@@ -1,6 +1,13 @@
 package server.model;
 
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -9,10 +16,12 @@ import java.util.List;
 import common.Role;
 
 import common.interfaces.UserManager;
+import common.request_data.AnalyseFile;
 import common.request_data.Complaint;
 import common.request_data.ComplaintList;
 import common.request_data.IncomeReport;
 import common.request_data.IncomeReportList;
+import common.request_data.Order;
 import common.request_data.OrderReport;
 import common.request_data.Shop;
 import common.request_data.User;
@@ -71,8 +80,6 @@ public class ServerUserManager extends BaseSQL implements UserManager {
 		return true;
 	}
 	
-	
-	
 	public static void resetSurvey(Connection connection) {
 		String query = "DROP TABLE IF EXISTS surveys;";
 		try {
@@ -80,7 +87,24 @@ public class ServerUserManager extends BaseSQL implements UserManager {
 		} catch (SQLException e) {
 			e.printStackTrace();
 		} // TO-CHECK
-		query = "CREATE TABLE surveys ( surveyId int NOT NULL AUTO_INCREMENT ,q1 VARCHAR(255) ,q2 VARCHAR(255) ,q3 VARCHAR(255) ,q4 VARCHAR(255) ,q5 VARCHAR(255) ,q6 VARCHAR(255) ,type VARCHAR(255) ,shopName VARCHAR(255) ,date VARCHAR(255) ,PRIMARY KEY (surveyId));";
+		query = "CREATE TABLE surveys ( surveyId int NOT NULL AUTO_INCREMENT ,q1 VARCHAR(255) ,q2 VARCHAR(255) ,q3 VARCHAR(255) ,q4 VARCHAR(255) ,q5 VARCHAR(255) ,q6 VARCHAR(255) ,type VARCHAR(255) ,shopName VARCHAR(255) ,date VARCHAR(255) ,surveyAnalyseId VARCHAR(255), PRIMARY KEY (surveyId));";
+		try {
+			runUpdate(connection, query);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	
+	
+	public static void resetSurveyAnalysis(Connection connection) {
+		String query = "DROP TABLE IF EXISTS surveyanalysis;";
+		try {
+			runUpdate(connection, query);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} // TO-CHECK
+		query = "CREATE TABLE surveyanalysis ( surveyAnalyseId" + VARCHAR + ", pdfAnalayse LONGBLOB);";
 		try {
 			runUpdate(connection, query);
 		} catch (SQLException e) {
@@ -245,6 +269,9 @@ public class ServerUserManager extends BaseSQL implements UserManager {
 				user.exDate = rs.getString(EXPIRATION_DATE);
 				user.cvv = rs.getString(CVV);
 				user.logInfo = (rs.getInt(LOG_INFO) != 0 ? true : false);
+				System.out.println("248 ServerUserManager " +  rs.getString("userWallet"));
+				user.userWallet = Double.parseDouble(rs.getString("userWallet"));
+				System.out.println("248 ServerUserManager " +  user.userWallet);
 				user.setAccountStatus();
 				if (!user.password.equals(password) || user.logInfo )  {
 				
@@ -356,6 +383,7 @@ public class ServerUserManager extends BaseSQL implements UserManager {
 				user.exDate = rs.getString(EXPIRATION_DATE);
 				user.cvv = rs.getString(CVV);
 				user.logInfo = (rs.getInt(LOG_INFO) != 0 ? true : false);
+				user.userWallet = Double.parseDouble(rs.getString("userWallet"));
 				user.setAccountStatus();
 				usersList.Users.add(user);
 			}
@@ -513,10 +541,10 @@ public class ServerUserManager extends BaseSQL implements UserManager {
 	
 	@Override
 	public boolean addNewCompliant(String userName, String orderId, String complaint, String date, String price,
-			String complaintStatus, String supportName, String refund,Shop shop) {
+			String complaintStatus, String refund, Shop shop, String supportName) {
 		String query = "INSERT INTO complaints VALUES (" + "'" + userName + "', " + "'" + orderId + "', " + "'"
 				+ complaint + "', " + "'" + date + "', " + "'" + price + "', '" + complaintStatus + "', '" + supportName
-				+ "', " + "'" + refund + "', " + "'" + shop.name() + "');";
+				+ "', " + "'" + refund + "', '" + shop.name() + "');";
 		try {
 			runUpdate(connection, query);
 		} catch (SQLException e) {
@@ -530,7 +558,7 @@ public class ServerUserManager extends BaseSQL implements UserManager {
 	public ComplaintList getAllComplaints() {
 		ComplaintList complaintList = new ComplaintList();
 		complaintList.complaints = new ArrayList<Complaint>();
-		String query = "SELECT * FROM complaints ;";
+		String query = "SELECT * FROM complaints;";
 		try {
 			ResultSet rs = runQuery(connection, query);
 			while (rs.next()) { // for lines
@@ -543,6 +571,7 @@ public class ServerUserManager extends BaseSQL implements UserManager {
 				complaint.complaintStatus = rs.getString("complaintStatus");
 				complaint.refund = rs.getString("refund");
 				complaint.shop = Shop.valueOf(rs.getString(SHOP_NAME));
+				complaint.supportName = rs.getString("supportName");
 				complaintList.complaints.add(complaint);
 			}
 		} catch (SQLException e) {
@@ -553,24 +582,50 @@ public class ServerUserManager extends BaseSQL implements UserManager {
 	
 	@Override
 	public boolean setRefundAmount(String orderId, String refund) {
-		String query = "UPDATE complaints SET refund ='" + refund + "' , complaintStatus = 'Approved' WHERE orderId ='"
-				+ orderId + "';";
 		try {
-			runUpdate(connection, query);
-		} catch (SQLException e) {
-			e.printStackTrace();
-			return false;
+			Double x = Double.parseDouble(orderId);
+			String query = "UPDATE complaints SET refund ='" + refund
+					+ "' , complaintStatus = 'Approved' WHERE orderId ='" + orderId + "';";
+			try {
+				runUpdate(connection, query);
+			} catch (SQLException e) {
+				e.printStackTrace();
+				return false;
+			}
+			return true;
+		} catch (NumberFormatException e2) {
+			String query = "SELECT userWallet FROM users WHERE username = '" + orderId + "';";
+			String tmp = null;
+			ResultSet rs;
+			try {
+				rs = runQuery(connection, query);
+				while (rs.next())
+					tmp = rs.getString("userWallet");
+			} catch (SQLException e1) {
+				e1.printStackTrace();
+			}
+			Double val1 = Double.parseDouble(tmp);
+			Double val2 = Double.parseDouble(refund);
+			Double refundTmp = val1 + val2;
+			refund = refundTmp + "";
+			String query1 = "UPDATE users SET userWallet ='" + refund + "' WHERE username ='" + orderId + "';";
+			try {
+				runUpdate(connection, query1);
+			} catch (SQLException e) {
+				e.printStackTrace();
+				return false;
+			}
+			return true;
 		}
-		return true;
 	}
 
 	@Override
-	public boolean setSurveyAnswers(int q1, int q2, int q3, int q4, int q5, int q6, String type, String shopName,
-			String date) {
+	public boolean setSurveyAnswers(double q1, double q2, double q3, double q4, double q5, double q6, String type,
+			String shopName, String date, String surveyAnalyseId) {
 		int zero = 0;
 		String query = "INSERT INTO surveys VALUES (" + "'" + zero + "', " + "'" + q1 + "', " + "'" + q2 + "', " + "'"
 				+ q3 + "', " + "'" + q4 + "', " + "'" + q5 + "', '" + q6 + "', '" + type + "', " + "'" + shopName
-				+ "', " + "'" + date + "');";
+				+ "', " + "'" + date + "', '" + surveyAnalyseId + "');";
 		try {
 			runUpdate(connection, query);
 		} catch (SQLException e) {
@@ -613,7 +668,7 @@ public class ServerUserManager extends BaseSQL implements UserManager {
 				orderReport.White_Rose = rs.getString("White_Rose");
 				orderReport.Red_Rose = rs.getString("Red_Rose");
 				orderReport.TON = rs.getString("TotalNumberOfOrders");
-				System.out.println("616 ServerSuerManager " + orderReport.TON);
+			
 				
 	
 			}
@@ -621,6 +676,93 @@ public class ServerUserManager extends BaseSQL implements UserManager {
 			e.printStackTrace();
 		}
 		return orderReport;
+	}
+	
+	@Override
+	public boolean updateWallet(double wallet) {
+		String s = ""+wallet;
+		String query = "UPDATE " + TABLE_NAME + " SET " + "userWallet" + "='" + s + "' WHERE " + USERNAME + "='" + requestedBy.username + "';";
+		try {
+			runUpdate(connection, query);
+		} catch (SQLException e) {
+			/* TODO: probably incorrect. Will not fail if result is empty. */
+			e.printStackTrace();
+			return false;
+		}
+		return true;
+	}
+
+	@Override
+	public String getUserWallet(String username) {
+		
+		String query = "SELECT userWallet FROM users WHERE username = '" + username + "';";
+		String wallet = null;
+		try {
+			ResultSet rs = runQuery(connection, query);
+			
+			while (rs.next()) {
+				wallet = rs.getString("userWallet");
+				
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return wallet;
+
+	}
+
+	@Override
+	public void updateWalletR(Order order) {
+		User manager = new User();
+		manager.userrole = Role.MANAGER;
+		ServerOrderManager som = new ServerOrderManager(manager,connection);
+		
+		Order o = som.getOrder(order.orderNumber);
+		Double oldWallet = Double.parseDouble(getUserWallet(o.username));
+		order.totalPrice = order.totalPrice + oldWallet;
+		String query = "UPDATE " + TABLE_NAME + " SET " + "userWallet" + "='" + order.totalPrice + "' WHERE " + USERNAME + "='" + o.username + "';";
+		try {
+			runUpdate(connection, query);
+		} catch (SQLException e) {
+			/* TODO: probably incorrect. Will not fail if result is empty. */
+			e.printStackTrace();
+			
+		}
+	
+	}
+
+	@Override
+	public boolean analyseTypeSurvey(AnalyseFile myFile) throws FileNotFoundException {
+		int fileSize = myFile.size;
+		ArrayList<String> analyzeId = new ArrayList<>();
+		File newFile = null;
+		FileOutputStream fileOut;
+		try {
+			newFile = new File(myFile.fileName);
+			fileOut = new FileOutputStream(newFile);
+			BufferedOutputStream bufferOut = new BufferedOutputStream(fileOut);
+			try {
+				bufferOut.write(myFile.byteArray, 0, myFile.size);
+				fileOut.flush();
+				bufferOut.flush();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
+		try {
+			PreparedStatement ps = connection
+					.prepareStatement("UPDATE zerli_database.surveyanalysis SET pdfAnalayse = ? WHERE surveyAnalyseId= "
+							+ myFile.surveyAnalyseId + " ");
+			ps.setBinaryStream(1, new FileInputStream(newFile));
+			ps.executeUpdate();
+		} catch (SQLException e1) {
+			e1.printStackTrace();
+			System.out.println("PDF FAILED");
+			return false;
+		}
+		return true;
 	}
 
 

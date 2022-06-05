@@ -45,6 +45,7 @@ public class ServerController {
 	public void setServerModel(ServerManager model) {
 		this.model = model;
 		this.connected = false;
+		
 	}
 
 	public void onDefault(ActionEvent event) throws Exception {
@@ -59,11 +60,10 @@ public class ServerController {
 			serverMessage.setText("YOU MUST CONNECT FIRST");
 			return;
 		}
+		else {
 		this.model.getDBManager().importUsersFromDifferentDataBase();
 		//buttonImport.setVisible(false);
-		//buttonImport.setText("Imported");
-		//buttonImport.setDisable(true);
-		
+		}
 	}
 
 	public void onConnect(ActionEvent event) throws Exception {

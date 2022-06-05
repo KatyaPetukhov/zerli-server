@@ -1,5 +1,6 @@
 package server.model;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.sql.SQLIntegrityConstraintViolationException;
@@ -9,9 +10,13 @@ import common.Request;
 import common.RequestType;
 import common.Role;
 import common.interfaces.CartManager;
+import common.interfaces.ProductManager;
+import common.interfaces.UserManager;
 import common.interfaces.UserManager.PermissionDenied;
 import common.interfaces.UserManager.WeakPassword;
+import common.request_data.AnalyseFile;
 import common.request_data.CategoriesList;
+import common.request_data.Complaint;
 import common.request_data.ComplaintList;
 import common.request_data.Order;
 import common.request_data.OrderList;
@@ -22,6 +27,7 @@ import common.request_data.IncomeReportList;
 import common.request_data.ProductList;
 import common.request_data.Refund;
 import common.request_data.ServerError;
+import common.request_data.Shop;
 import common.request_data.Survey;
 import common.request_data.User;
 import common.request_data.UsersList;
@@ -131,6 +137,15 @@ public class EchoServer extends AbstractServer {
 			request = handleGetOrders(request);
 			break;
 			
+		case GET_USER_WALLET:
+			try {
+				request= handleGetUserWallet(request);
+			} catch (InstantiationException | IllegalAccessException | ClassNotFoundException | SQLException e3) {
+				// TODO Auto-generated catch block
+				e3.printStackTrace();
+			}
+			break;
+			
 		case APPROVE_USER:
 			request = handleApproveUser(request);
 			break;
@@ -159,6 +174,15 @@ public class EchoServer extends AbstractServer {
 			}
 			break;
 			
+		case UPDATE_WALLET:
+			try {
+				request = handleUpdateWallet(request);
+			} catch (InstantiationException | IllegalAccessException | ClassNotFoundException | SQLException e2) {
+				// TODO Auto-generated catch block
+				e2.printStackTrace();
+			}
+			break;
+			
 		case ADD_ORDER:
 			try {
 				request = handleAddOrder(request);
@@ -166,6 +190,23 @@ public class EchoServer extends AbstractServer {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
+			break;
+		
+		case CANEL_REFUND:
+			try {
+				request = handleCancelRefund(request);
+			} catch (InstantiationException | IllegalAccessException | ClassNotFoundException | SQLException e2) {
+				// TODO Auto-generated catch block
+				e2.printStackTrace();
+			}
+			break;
+			
+		case UPDATE_ORDER:
+			request = handleUpdateOrder(request);
+			break;
+			
+		case DELETE_ORDER:
+			request = handleDeleteOrder(request);
 			break;
 			
 		case GET_ALL_COMPLAINTS:
@@ -200,8 +241,27 @@ public class EchoServer extends AbstractServer {
 			} 
 			break;
 			
+		case SET_DISCOUNT:
+			try {
+				request = handleSetDiscount(request);
+			} catch (InstantiationException | IllegalAccessException | ClassNotFoundException | PermissionDenied
+					| SQLException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+			break;
+			
 		case CHANGE_STATUS:
 			request = handleChangeStatus(request);
+			break;
+			
+		case TOFROM_CATALOGUE:
+			try {
+				request = handleToFromCatalogue(request);
+			} catch (InstantiationException | IllegalAccessException | ClassNotFoundException | SQLException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
 			break;
 		
 		case GET_ORDER_REPORT:
@@ -211,6 +271,30 @@ public class EchoServer extends AbstractServer {
 		case GET_PRODUCT:
 			request = handleGetProduct(request);
 			break;
+			
+		case SET_COMPLAINT:
+			
+			try {
+				request = handleNewComplaint(request);
+			} catch (InstantiationException | IllegalAccessException | ClassNotFoundException | SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		
+			break;
+		
+		case GET_ANALYSE_SURVEY:
+			
+			try {
+				request = handleSurveyAnalyse(request);
+			} catch (InstantiationException | IllegalAccessException | ClassNotFoundException | FileNotFoundException
+					| SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		
+			break;	
+			
 	
 		default:
 			request.requestType = RequestType.REQUEST_FAILED;
@@ -223,7 +307,91 @@ public class EchoServer extends AbstractServer {
 	
 
 
-		// NEED-TO-CHECK
+	private Request handleCancelRefund(Request request) throws InstantiationException, IllegalAccessException, ClassNotFoundException, SQLException {
+		User u = User.fromJson(request.data);
+		Order o = new Order();
+		o.totalPrice = u.userWallet;
+		o.username = u.username;
+		o.orderNumber = u.password; // on this func password was set to ordernumber from clientUserManager
+		ServerUserManager s = new ServerUserManager(request.user, manager.getConnection());
+		s.updateWalletR(o);
+		request.data = u.toJson();
+		return request;
+	}
+
+	private Request handleGetUserWallet(Request request) throws InstantiationException, IllegalAccessException, ClassNotFoundException, SQLException {
+		User u = User.fromJson(request.data);
+		String username = u.username;
+		ServerUserManager s = new ServerUserManager(request.user, manager.getConnection());
+		String w = s.getUserWallet(username);
+		u.userWallet = Double.parseDouble(w);
+		request.data = u.toJson();
+		return request;
+	}
+
+	private Request handleUpdateWallet(Request request) throws InstantiationException, IllegalAccessException, ClassNotFoundException, SQLException {
+		UserManager userManager = new ServerUserManager(request.user, manager.getConnection());
+		User walletToUpdate = User.fromJson(request.data);
+		if (!userManager.updateWallet(walletToUpdate.userWallet)) {
+			/* Product does not exists. */
+			request.requestType = RequestType.REQUEST_FAILED;
+		}
+		request.data = null;
+		return request;
+	}
+	
+	private Request handleToFromCatalogue(Request request) throws InstantiationException, IllegalAccessException, ClassNotFoundException, SQLException {
+		ProductManager  productManager= new ServerProductManager(request.user, manager.getConnection());
+		Product toFromCatalogue = Product.fromJson(request.data);
+		try {
+			if (!productManager.productToFromCatalogue(toFromCatalogue.name,toFromCatalogue.inCatalogue)) {
+				/* Product does not exists. */
+				request.requestType = RequestType.REQUEST_FAILED;
+			}
+			request.data = null;
+		} catch (PermissionDenied e) {
+			request.requestType = RequestType.FORBIDDEN;
+			request.data = new ServerError("Can not change to/from catalogue field.").toJson();
+		}
+		return request;
+	}
+	
+	private Request handleSetDiscount(Request request) throws PermissionDenied, InstantiationException, IllegalAccessException, ClassNotFoundException, SQLException {
+		ProductManager  productManager= new ServerProductManager(request.user, manager.getConnection());
+		Product product = Product.fromJson(request.data);		
+		if (!productManager.setDiscount(product.name,product.discount)) {
+			/* Product does not exists. */
+			request.requestType = RequestType.REQUEST_FAILED;
+		}
+		request.data = null;
+		return request;
+}
+	private Request handleNewComplaint(Request request)
+			throws InstantiationException, IllegalAccessException, ClassNotFoundException, SQLException {
+		Complaint complaintRequest = Complaint.fromJson(request.data);
+		if (manager.addNewCompliant(complaintRequest.userName, complaintRequest.orderId, complaintRequest.complaint,
+				complaintRequest.date, complaintRequest.price, complaintRequest.complaintStatus,
+				complaintRequest.refund, complaintRequest.shop, request.user.username))
+			request.data = null;
+		else {
+			request.requestType = RequestType.REQUEST_FAILED;
+			request.data = new ServerError("Request failed in DB.").toJson();
+		}
+		return request;
+	}
+
+		private Request handleDeleteOrder(Request request) {
+			Order order = Order.fromJson(request.data);
+			manager.deleteOrder(order);
+		return request;
+	}
+
+		private Request handleUpdateOrder(Request request) {
+			Order order = Order.fromJson(request.data);
+			manager.updateOrder(order);
+		return request;
+	}
+
 		private Request handleSurveyAnswers(Request request)
 				throws InstantiationException, IllegalAccessException, ClassNotFoundException, SQLException {
 			Survey surveyRequest = Survey.fromJson(request.data);
@@ -231,7 +399,7 @@ public class EchoServer extends AbstractServer {
 			if (serverUserManager.setSurveyAnswers(surveyRequest.getQuestion1(), surveyRequest.getQuestion2(),
 					surveyRequest.getQuestion3(), surveyRequest.getQuestion4(), surveyRequest.getQuestion5(),
 					surveyRequest.getQuestion6(), surveyRequest.getType(), surveyRequest.getShopName(),
-					surveyRequest.getDate()))
+					surveyRequest.getDate(), surveyRequest.getSurveyAnalyseId()))
 				request.data = null;
 			else {
 				request.requestType = RequestType.REQUEST_FAILED;
@@ -243,13 +411,8 @@ public class EchoServer extends AbstractServer {
 		private Request handleGetComplaints(Request request)
 				throws InstantiationException, IllegalAccessException, ClassNotFoundException, SQLException {
 			ComplaintList complaintList = ComplaintList.fromJson(request.data);
-	
-			complaintList = manager.getAllComplaints();
-			if(complaintList == null) {
-				request.requestType = RequestType.REQUEST_FAILED;
-				request.data = null;
-				return request;
-			}
+			ServerUserManager serverUserManager = new ServerUserManager(request.user, manager.getConnection());
+			complaintList = serverUserManager.getAllComplaints();
 			request.data = complaintList.toJson();
 			return request;
 		}
@@ -376,7 +539,8 @@ public class EchoServer extends AbstractServer {
 		toCheck.userrole=Role.WORKER;
 		if(!manager.userLoggedIn(toCheck)) {
 			System.out.println("User to be checkd is: " + toCheck.username);
-			toCheck = manager.validateUser(toCheck);}
+			toCheck = manager.validateUser(toCheck);
+			}
 		
 		else toCheck = null;
 		
@@ -394,7 +558,7 @@ public class EchoServer extends AbstractServer {
 		 * requestType.ADD_USER
 		 */
 		User toAdd = User.fromJson(request.data);
-		User checkUser =manager.validateUser(toAdd);
+		User checkUser = manager.validateUser(toAdd);
 		
 		if(checkUser == null  || checkUser.cardNumber == null ) {
 			request.requestType = RequestType.REQUEST_FAILED;;
@@ -404,7 +568,7 @@ public class EchoServer extends AbstractServer {
 
 		try {
 			if (manager.getUserManager(request.user).addNewUser(toAdd.username, toAdd.password, toAdd.nickname,toAdd.shopname,
-					toAdd.userrole, toAdd.approved,toAdd.cardNumber,toAdd.exDate,toAdd.cvv,toAdd.logInfo,toAdd.userWallet)) {
+					toAdd.userrole, toAdd.approved,toAdd.cardNumber,toAdd.exDate,toAdd.cvv,toAdd.logInfo,toAdd.userWallet.toString())) {
 				/* User already exists. */
 				
 			}
@@ -484,7 +648,10 @@ public class EchoServer extends AbstractServer {
 	
 	private Request handleGetOrders(Request request) {
 		OrderList orders = OrderList.fromJson(request.data);
-		orders = manager.getOrderManager(request.user).getOrders(orders.username);
+		if(orders.username.equals(Shop.HAIFA.name()) || orders.username.equals(Shop.NAHARIYA.name()) )
+			orders = manager.getOrderManager(request.user).getOrdersM(orders.username);
+		else 
+			orders = manager.getOrderManager(request.user).getOrders(orders.username);
 		if (orders == null) {
 			System.out.println("Incorrect request.");
 			request.data = null;
@@ -512,4 +679,19 @@ public class EchoServer extends AbstractServer {
 		
 		return request;
 	}
+	
+	private Request handleSurveyAnalyse(Request request) throws InstantiationException, IllegalAccessException,
+	ClassNotFoundException, SQLException, FileNotFoundException {
+		AnalyseFile analyseSurvey = AnalyseFile.fromJson(request.data);
+		System.out.println("echo server first: " + analyseSurvey.toString()); // jessica
+		ServerUserManager serverUserManager = new ServerUserManager(request.user, manager.getConnection());
+		if (!(serverUserManager.analyseTypeSurvey(analyseSurvey))) {
+			request.requestType = RequestType.REQUEST_FAILED;
+			request.data = new ServerError("Request failed in DB.").toJson();
+		}
+		System.out.println("echo server : " + request.data); // jessica
+		return request;
+	}
+	
+
 }
